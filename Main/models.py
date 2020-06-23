@@ -10,7 +10,14 @@ from django.dispatch import receiver
 # 标签Manager
 class MovTagManager(models.Manager):
     def create(self, *args, **kwargs):
-        cnt = MovieTag.objects.count() + 1
+        instance = IDCount.objects.get(Type='Tag')
+        if not instance.exists():
+            cins=IDCount.objects.create(Type='Tag')
+            cins.save()
+            instance=cins
+        cnt=instance.Count
+        instance.Count += 1
+        instance.save()
         tagId = 'Tag' + str(cnt)
         kwargs['MovTagId']=tagId
         super(MovTagManager, self).create(*args, **kwargs)
@@ -38,7 +45,14 @@ def cover_directory_path(instance, filename):
 # 电影manager
 class MovieManager(models.Manager):
     def create(self, *args, **kwargs):
-        cnt = Movie.objects.count() + 1
+        instance = IDCount.objects.get(Type='Movie')
+        if not instance.exists():
+            cins = IDCount.objects.create(Type='Movie')
+            cins.save()
+            instance = cins
+        cnt = instance.Count
+        instance.Count += 1
+        instance.save()
         movId = 'Mov' + str(cnt)
         kwargs['MovId']=movId
         super(MovieManager, self).create(*args, **kwargs)
@@ -55,13 +69,20 @@ class Movie(models.Model):
     # 电影封面
     MovImg=models.ImageField(upload_to=cover_directory_path,verbose_name='电影封面', default='cover/default_cover.bmp')
     # 电影产地
-    MovOrigin=models.SmallIntegerField(verbose_name='电影产地')
+    MovOrigin=models.SmallIntegerField(verbose_name='电影产地',choices=[(0,'国产'),(1,'欧美'),(2,'日本'),(3,'印度'),(4,'其他')])
     # 电影公司
     MovCompany=models.CharField(max_length=100,verbose_name="电影公司")
     # 电影导演
     MovDirector=models.CharField(max_length=100,verbose_name='电影导演')
     # 电影简介
     MovDescription=models.TextField(verbose_name='电影描述')
+    # 电影上映时间
+    MovDate=models.DateField(auto_now=False,auto_now_add=False,verbose_name='电影上映时间')
+
+    #IMDB id
+    MovImdbId=models.IntegerField(verbose_name='IMDB')
+    #tmdb id
+    MovTmdbId=models.IntegerField(verbose_name='TMDB')
 
     objects=MovieManager
     def __str__(self):
@@ -71,10 +92,52 @@ class Movie(models.Model):
         verbose_name='电影信息'
         verbose_name_plural='电影信息'
 
+# 演员manager
+class ActorManager(models.Manager):
+    def create(self, *args, **kwargs):
+        instance = IDCount.objects.get(Type='Actor')
+        if not instance.exists():
+            cins = IDCount.objects.create(Type='Actor')
+            cins.save()
+            instance = cins
+        cnt = instance.Count
+        instance.Count += 1
+        instance.save()
+        uId = 'Uid' + str(cnt)
+        kwargs['ActorId']=uId
+        super(ActorManager, self).create(*args, **kwargs)
+# 演员
+class Actor(models.Model):
+    # 演员id
+    ActorId=models.CharField(max_length=50,unique=True,editable=False,blank=True,verbose_name='演员id')
+    # 演员姓名
+    ActorName=models.CharField(max_length=50,verbose_name='演员姓名')
+    # 演员地区
+    ActorArea=models.CharField(max_length=50,verbose_name='演员地区',blank=True,null=True)
+
+
+# 演员参演关系
+class ActorConnection(models.Model):
+    # 演员id
+    ActorId = models.ForeignKey(to='Actor', to_field='ActorId', verbose_name='演员id', on_delete=models.CASCADE)
+    # 电影id
+    MovId = models.ForeignKey(to='Movie', to_field='MovId', verbose_name='电影id', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together=['ActorId','MovId']
+        index_together=['ActorId','MovId']
+
 # 用户manager
 class UserManager(models.Manager):
     def create(self, *args, **kwargs):
-        cnt = User.objects.count() + 1
+        instance = IDCount.objects.get(Type='User')
+        if not instance.exists():
+            cins = IDCount.objects.create(Type='User')
+            cins.save()
+            instance = cins
+        cnt = instance.Count
+        instance.Count += 1
+        instance.save()
         uId = 'Uid' + str(cnt)
         kwargs['UserId']=uId
         super(UserManager, self).create(*args, **kwargs)
@@ -104,13 +167,6 @@ class User(models.Model):
         verbose_name_plural='用户信息'
 
 
-# 记录manager
-class RecordManager(models.Manager):
-    def create(self, *args, **kwargs):
-        cnt = Movie.objects.count() + 1
-        movId = 'Mov' + str(cnt)
-        kwargs['MovId']=movId
-        super(MovieManager, self).create(*args, **kwargs)
         
 # 记录类基类
 class BaseRecord(models.Model):
@@ -127,18 +183,44 @@ class BaseRecord(models.Model):
         abstract=True
         index_together=['UserId','TargetId']
 
+
+# 点赞manager
+class AgreeManager(models.Manager):
+    def create(self, *args, **kwargs):
+        instance = IDCount.objects.get(Type='Agree')
+        if not instance.exists():
+            cins = IDCount.objects.create(Type='Agree')
+            cins.save()
+            instance = cins
+        cnt = instance.Count
+        instance.Count += 1
+        instance.save()
+        aId = 'Ag' + str(cnt)
+        kwargs['RecordId']=aId
+        super(AgreeManager, self).create(*args, **kwargs)
+
 #点赞数据
 class Agree(BaseRecord):
     # 点赞目标类型(评论/标签)
     AgreeType=models.PositiveSmallIntegerField(choices=[(1,'评论'),(2,'标签')], verbose_name='点赞类型')
 
-    # 在存储时生成id
-    def save(self, *args, **kwargs):
-        cnt = Agree.objects.count() + 1
-        aId = 'Ag' + str(cnt)
-        self.RecordId = aId
-        super().save(*args, **kwargs)
+    objects=AgreeManager
 
+
+# 编辑manager
+class EditManager(models.Manager):
+    def create(self, *args, **kwargs):
+        instance = IDCount.objects.get(Type='Edit')
+        if not instance.exists():
+            cins = IDCount.objects.create(Type='Edit')
+            cins.save()
+            instance = cins
+        cnt = instance.Count
+        instance.Count += 1
+        instance.save()
+        eId = 'Edit' + str(cnt)
+        kwargs['RecordId']=eId
+        super(EditManager, self).create(*args, **kwargs)
 # 编辑记录
 class EditRecord(BaseRecord):
     # 编辑类型
@@ -146,28 +228,46 @@ class EditRecord(BaseRecord):
     # 编辑内容
     EditContent=models.TextField(verbose_name='修改内容')
 
-    # 在存储时生成id
-    def save(self, *args, **kwargs):
-        cnt = EditRecord.objects.count() + 1
-        eId = 'Edit' + str(cnt)
-        self.RecordId = eId
-        super(EditRecord,self).save(*args, **kwargs)
+    objects=EditManager
 
     class Meta:
         verbose_name=verbose_name_plural='编辑记录'
 
+# 收藏manager
+class FavManager(models.Manager):
+    def create(self, *args, **kwargs):
+        instance = IDCount.objects.get(Type='Fav')
+        if not instance.exists():
+            cins = IDCount.objects.create(Type='Fav')
+            cins.save()
+            instance = cins
+        cnt = instance.Count
+        instance.Count += 1
+        instance.save()
+        fId = 'Fav' + str(cnt)
+        kwargs['RecordId']=fId
+        super(FavManager, self).create(*args, **kwargs)
 # 收藏记录
 class FavoriteRecord(BaseRecord):
     # 收藏类型
     FavoriteType=models.PositiveSmallIntegerField(default=1,choices=[(1,'电影')], verbose_name='收藏类型')
 
-    # 在存储时生成id
-    def save(self, *args, **kwargs):
-        cnt = FavoriteRecord.objects.count() + 1
-        fId = 'Fav' + str(cnt)
-        self.RecordId = fId
-        super(FavoriteRecord,self).save(*args, **kwargs)
+    objects=FavManager
 
+# 评论manager
+class ReplyManager(models.Manager):
+    def create(self, *args, **kwargs):
+        instance = IDCount.objects.get(Type='Reply')
+        if not instance.exists():
+            cins = IDCount.objects.create(Type='Reply')
+            cins.save()
+            instance = cins
+        cnt = instance.Count
+        instance.Count += 1
+        instance.save()
+        rId = 'Rep' + str(cnt)
+        kwargs['RecordId']=rId
+        super(ReplyManager, self).create(*args, **kwargs)
 # 评论记录
 class ReplyRecord(BaseRecord):
     # 回复目标的类型
@@ -179,12 +279,7 @@ class ReplyRecord(BaseRecord):
     # 点赞数
     AgreeCount=models.PositiveIntegerField(default=0,editable=False,verbose_name='点赞数')
 
-    # 在存储时生成id
-    def save(self, *args, **kwargs):
-        cnt = ReplyRecord.objects.count() + 1
-        rId = 'Rep' + str(cnt)
-        self.RecordId = rId
-        super(ReplyRecord,self).save(*args, **kwargs)
+    objects=ReplyManager
 
     class Meta:
         verbose_name=verbose_name_plural='评论记录'
@@ -199,20 +294,20 @@ class MovTagConnection(models.Model):
     AgreeCount=models.PositiveIntegerField(default=0, editable=False,verbose_name='点赞数')
 
     class Meta:
+        unique_together=['MovTagId','MovId']
         # 添加联合索引
         index_together=['MovTagId','MovId']
 
+
+# id记录
+class IDCount(models.Model):
+    # 类型
+    Type=models.CharField(max_length=20,unique=True,verbose_name='id类型')
+    # 数字
+    Count=models.PositiveIntegerField(default=0,editable=False,verbose_name='计数')
 ####
 #触发器部分
 ####
-
-# 触发电影添加
-@receiver(pre_save,sender=Movie)
-def Pre_Save_Movie_Handler(sender,instance,**kwargs):
-    cnt=Movie.objects.count()
-    movId='Mov'+str(cnt)
-    instance.MovId=movId
-
 
 # 处理标签删除情况
 @receiver(pre_delete,sender=MovieTag)
