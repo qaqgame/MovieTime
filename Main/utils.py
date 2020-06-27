@@ -66,6 +66,10 @@ def ImportMovie(title,typeList,length,origin,company,director,content,tagList,ac
     if not content:
         content='无'
 
+    movieQuery=Movie.objects.filter(MovName=title,MovLength=length,MovDirector=director)
+    # 若该电影已存在则直接return
+    if movieQuery.exists():
+        return
     movieInstance=Movie.objects.create(MovName=title,MovLength=length,MovOrigin=finalRegion,MovType=finalType,MovCompany=company,
                          MovDirector=director, MovDescription=content,MovDate=time,MovImdbId=imdb,MovTmdbId=tmdb)
     # 处理封面

@@ -38,7 +38,12 @@ def GetSingle(items):
 
 with open('movies.csv', 'r',encoding='UTF-8') as f:
     reader=csv.reader(f)
-    next(reader)
+    if len(sys.argv)>1:
+        starter=int(sys.argv[1])
+    else:
+        starter=0
+    for i in range(0,starter):
+        next(reader)
     for row in reader:
         name=row[1]
         actors=row[3]
@@ -62,9 +67,11 @@ with open('movies.csv', 'r',encoding='UTF-8') as f:
 
         realDirector=GetSingle(director)
 
-        tempDate=datetime.datetime.strptime(str(date),"%Y")
-        realDate=tempDate.date()
-
+        if date and date!='0':
+            tempDate=datetime.datetime.strptime(str(date),"%Y")
+            realDate=tempDate.date()
+        else:
+            realDate=datetime.date.min
 
 
         if IMDB:
