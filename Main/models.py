@@ -146,15 +146,15 @@ class User(models.Model):
     # 用户id
     UserId=models.CharField(max_length=30,verbose_name='用户id',unique=True,editable=False,blank=True)
     # 密码
-    UserPsw=models.CharField(max_length=20,verbose_name='密码')
+    UserPwd=models.CharField(max_length=20,verbose_name='密码')
     # 用户名
     UserName=models.CharField(max_length=30,verbose_name='用户名',unique=True)
     # 用户等级
-    UserLevel=models.SmallIntegerField(verbose_name='用户等级')
+    UserLevel=models.SmallIntegerField(verbose_name='用户等级', default=1)
     # 用户当前经验值
-    UserCurExp=models.SmallIntegerField(verbose_name='用户当前经验')
+    UserCurExp=models.SmallIntegerField(verbose_name='用户当前经验', default=0)
     # 用户最大经验值
-    UserMaxExp=models.SmallIntegerField(verbose_name='用户最大经验')
+    UserMaxExp=models.SmallIntegerField(verbose_name='用户最大经验', default=1000)
 
     objects=UserManager
     def __str__(self):
@@ -357,3 +357,4 @@ def Pre_Delete_Agree_Handler(sender,instance,**kwargs):
         target = ReplyRecord.objects.get(RecordId=temp)
         target.AgreeCount -= 1
         target.save()
+
