@@ -150,11 +150,14 @@ class ActorConnection(models.Model):
 # 用户manager
 class UserManager(models.Manager):
     def create(self, *args, **kwargs):
-        instance = IDCount.objects.get(Type='User')
-        if not instance.exists():
+        all = IDCount.objects.filter(Type='User')
+        if not all.exists():
+            print('create movie count')
             cins = IDCount.objects.create(Type='User')
             cins.save()
             instance = cins
+        else:
+            instance = all[0]
         cnt = instance.Count
         instance.Count += 1
         instance.save()
@@ -175,7 +178,7 @@ class User(models.Model):
     UserCurExp=models.SmallIntegerField(verbose_name='用户当前经验', default=0)
     # 用户最大经验值
     UserMaxExp=models.SmallIntegerField(verbose_name='用户最大经验', default=1000)
-
+    Email = models.EmailField()
     objects=UserManager()
     def __str__(self):
         return self.UserName
