@@ -4,6 +4,7 @@ from urllib.request import urlopen
 
 import requests
 from django.core.files import File
+from django.db.models import QuerySet
 
 from Main.models import *
 MovieTypeDict={'Action':1,'Adventure':2,'Animation':3,"Children's":4,'Comedy':5,'Crime':6,'Documentary':7,'Drama':8,'Fantasy':9,'Film-Noir':10,'Horror':11,'Musical':12,'Mystery':13,'Romance':14,'Sci-Fi':15,'Thriller':16,'War':17,'Western':18,'Others':19,
@@ -138,4 +139,85 @@ def ImportActor(actorName,sex,area):
     instance=Actor.objects.create(ActorName=actorName,ActorSex=sexNo,ActorArea=area)
     #instance.save()
 
+# 根据电影的id获取该电影
+def GetFilm(filmId):
+    movie=Movie.objects.filter(MovId=filmId)
+    if movie.exists():
+        return movie[0]
+    return None
 
+# 根据电影的id获取电影的标签
+def GetFilmTags(filmId):
+    tags=MovTagConnection.objects.filter(MovId=filmId)
+    tagList=[]
+    if tags.exists():
+        for t in tags:
+           tagList.append(t.MovTagId)
+        result=[]
+        for tid in tagList:
+            result.append(MovieTag.objects.filter(MovTagId=tid)[0].MovTagCnt)
+        return result
+    return None
+
+# 根据电影id获取演员列表
+def GetFilmActors(filmId):
+    actors=ActorConnection.objects.filter(MovId=filmId)
+    al=[]
+    if actors.exists():
+        for t in actors:
+           al.append(t.MovTagId)
+        result=[]
+        for aid in al:
+            result.append(Actor.objects.filter(ActorId=aid)[0])
+        return result
+    return None
+
+# 根据电影类型来获取电影列表
+def GetFilmByType(type):
+    filmList=Movie.objects.extra(where=['MovType&%d!=0'],params=[type])
+    result=[]
+    for mov in filmList:
+        result.append(mov.MovId)
+    return result
+
+# 根据电影产地来获取电影列表
+def GetFilmByRegion(regions):
+    filmList = Movie.objects.extra(where=['MovOrigin&%d!=0'], params=[regions])
+    result = []
+    for mov in filmList:
+        result.append(mov.MovId)
+    return result
+
+# 根据电影年份获取列表
+def GetFilmByDate(year):
+    tempDate = datetime.datetime.strptime(str(year), "%Y")
+    realDate = tempDate.date()
+    filmList=Movie.objects.filter(MovDate=realDate)
+    result = []
+    for mov in filmList:
+        result.append(mov.MovId)
+    return result
+
+# 获取电影列表并排序
+def GetFilmList(type,regions,year,order):
+    tempDate = datetime.datetime.strptime(str(year), "%Y")
+    realDate = tempDate.date()
+    filmList = Movie.objects.extra(where=['MovType&%d!=0'], params=[type]).extra(where=['MovOrigin&%d!=0'],params=[regions]).filter(MovDate=realDate)
+    #日期升序
+    if order==0:
+        filmList=filmList.order_by('MovDate')
+    # 日期降序
+    elif order==1:
+        filmList=filmList.order_by('-MovDate')
+    # 名称升序
+    elif order==2:
+        filmList=filmList.order_by('MovName')
+    # 名称降序
+    elif order==3:
+        filmList=filmList.order_by('-MovName')
+    result = []
+    for mov in filmList:
+        result.append(mov.MovId)
+    return result
+
+# 获取电影列表(
