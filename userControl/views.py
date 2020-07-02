@@ -62,65 +62,70 @@ def signup(request):
             return JsonResponse({'signup': 'success', 'result': 'success', 'reason': '注册成功', 'formtype': 'register'})
     return render(request, "signup.html")
 
-def UserSpace(request):
+
+def UserSpace(request,un):
     res = MsgTemplate.copy()
-    if request.method == 'GET':
-        uname=request.GET.get('username')
-        # 存在用户名
-        if uname:
-            userInstance=models.User.objects.filter(UserName=uname)
-            # 如果没找到用户
-            if not userInstance.Exists():
-                res['result']=False
-                res['reason']='未找到该用户'
-                return JsonResponse(res)
-            # 处理用户数据
-            username=userInstance.UserName
-            userlv=userInstance.UserLevel
-            usercur=userInstance.UserCurExp
-            usermax=userInstance.UserMaxExp
-            userData={'username':username,'currlevel':userlv,'currexp':usercur,'maxexp':usermax}
-
-            # 查询该收藏
-            favList=models.FavoriteRecord.objects.filter(UserId=userInstance.UserId)
-            # 生成收藏数据
-            favResultList=[]
-            # 遍历收藏列表
-            for fav in favList:
-
-                # 获取收藏时间
-                date=str(fav.RecordTime)
-
-                MovInstance=models.Movie.objects.filter(MovId=fav.TargetId)
-                #电影不存在则跳过
-                if not MovInstance.Exists():
-                    continue
-
-                # 生成图片路径
-                imgPath=MovInstance.MovImg
-                fileName=imgPath.split('.')[0]
-                if fileName.contains('default_cover'):
-                    cover='/static/cover/default_cover.bmp'
-                else:
-                    ext=imgPath.split('.').pop()
-                    movId=MovInstance.MovId
-                    filename = 'Cover_{0}.{1}'.format(movId, ext)
-                    cover='/static/cover/'+movId+'/'+filename
-
-                # 获取电影名
-                name=MovInstance.MovName
-                favResultList.append({'Img': cover, 'Name': name, 'Date': date})
-
-
-            # 处理session部分
-
-
-            resultData={'userrelated':userData,'keeprelated':favResultList}
-            res['result']=True
-            res['data']=resultData
+    uname=un
+    # 存在用户名
+    if uname:
+        userInstances=models.User.objects.filter(UserName=uname)
+        # 如果没找到用户
+        if not userInstances.exists():
+            res['result']=False
+            res['reason']='未找到该用户'
             return JsonResponse(res)
-        # 不存在用户名
-        res['result']=False
-        res['reason']='未收到用户名'
+        userInstance=userInstances[0]
+        # 处理用户数据
+        username=userInstance.UserName
+        userlv=userInstance.UserLevel
+        usercur=userInstance.UserCurExp
+        usermax=userInstance.UserMaxExp
+        userData={'username':username,'currlevel':userlv,'currexp':usercur,'maxexp':usermax}
+
+        # 查询该收藏
+        favList=models.FavoriteRecord.objects.filter(UserId=userInstance.UserId)
+        print(favList.__len__())
+        # 生成收藏数据
+        favResultList=[]
+        # 遍历收藏列表
+        for fav in favList:
+
+            # 获取收藏时间
+            date=str(fav.RecordTime)
+
+            MovInstances=models.Movie.objects.filter(MovId=fav.TargetId)
+            print(fav.TargetId)
+            print(MovInstances.__len__())
+            #电影不存在则跳过
+            if not MovInstances.exists():
+                continue
+
+            # 生成图片路径
+            MovInstance = MovInstances[0]
+            imgPath=str(MovInstance.MovImg)
+            fileName=imgPath.split('.')[0]
+            if fileName.__contains__('default_cover'):
+                cover='/static/cover/default_cover.bmp'
+            else:
+                ext=imgPath.split('.').pop()
+                movId=MovInstance.MovId
+                filename = 'Cover_{0}.{1}'.format(movId, ext)
+                cover='/static/cover/'+movId+'/'+filename
+
+            # 获取电影名
+            name=MovInstance.MovName
+            favResultList.append({'Img': cover, 'Name': name, 'Date': date})
+
+
+        # 处理session部分
+
+
+        resultData={'userrelated':userData,'keeprelated':favResultList}
+        res['result']=True
+        res['data']=resultData
         return JsonResponse(res)
+    # 不存在用户名
+    res['result']=False
+    res['reason']='未收到用户名'
+    return JsonResponse(res)
 
