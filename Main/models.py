@@ -45,7 +45,7 @@ class MovieTag(models.Model):
 def cover_directory_path(instance, filename):
     ext = filename.split('.').pop()
     filename = 'Cover_{0}.{1}'.format(instance.MovId, ext)
-    return os.path.join('cover', instance.MovId,filename)
+    return os.path.join('static/cover', instance.MovId,filename)
 
 # 电影manager
 class MovieManager(models.Manager):
@@ -75,7 +75,7 @@ class Movie(models.Model):
     # 电影时长:
     MovLength=models.IntegerField(verbose_name='电影时长',default=0)
     # 电影封面
-    MovImg=models.ImageField(upload_to=cover_directory_path,verbose_name='电影封面', default='cover/default_cover.bmp')
+    MovImg=models.ImageField(upload_to=cover_directory_path,verbose_name='电影封面', default='static/cover/default_cover.bmp')
     # 电影产地
     MovOrigin=models.SmallIntegerField(verbose_name='电影产地',default=16)
     # 电影公司
@@ -178,7 +178,11 @@ class User(models.Model):
     UserCurExp=models.SmallIntegerField(verbose_name='用户当前经验', default=0)
     # 用户最大经验值
     UserMaxExp=models.SmallIntegerField(verbose_name='用户最大经验', default=1000)
+    # 邮箱
     Email = models.EmailField()
+    # 是否有浏览
+    HasView=models.BooleanField(default=False,verbose_name='是否有过浏览记录')
+
     objects=UserManager()
     def __str__(self):
         return self.UserName
@@ -206,6 +210,27 @@ class BaseRecord(models.Model):
         abstract=True
         index_together=['UserId','TargetId']
 
+# 浏览manager
+class ViewManager(models.Manager):
+    def create(self, *args, **kwargs):
+        all = IDCount.objects.filter(Type='View')
+        if not all.exists():
+            print('create movie count')
+            cins = IDCount.objects.create(Type='View')
+            cins.save()
+            instance = cins
+        else:
+            instance = all[0]
+        cnt = instance.Count
+        instance.Count += 1
+        instance.save()
+        uId = 'View' + str(cnt)
+        kwargs['RecordId']=uId
+        super(ViewManager, self).create(*args, **kwargs)
+
+#浏览数据
+class ViewRecord(BaseRecord):
+    objects=ViewManager()
 
 # 点赞manager
 class AgreeManager(models.Manager):
@@ -340,6 +365,14 @@ class IDCount(models.Model):
 @receiver(pre_delete,sender=MovieTag)
 def Pre_Delete_MovieTag_Handler(sender,instance,**kwargs):
     MovTagConnection.objects.filter(MovTagId=instance.MovTagId).delete()
+
+# 处理浏览记录创建
+@receiver(pre_save,sender=ViewRecord)
+def Pre_Save_ViewRcd_Handler(sender,instance,**kwargs):
+    # 将该用户的拥有浏览设为true
+    user=User.objects.get(UserId=instance.UserId)
+    user.HasView=True
+    user.save()
 
 # 处理点赞（在添加点赞时触发)
 @receiver(pre_save,sender=Agree)

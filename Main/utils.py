@@ -7,6 +7,9 @@ from django.core.files import File
 from django.db.models import QuerySet
 
 from Main.models import *
+
+MsgTemplate={'result':True,'reason':'','data':{}}
+
 MovieTypeDict={'Action':1,'Adventure':2,'Animation':3,"Children's":4,'Comedy':5,'Crime':6,'Documentary':7,'Drama':8,'Fantasy':9,'Film-Noir':10,'Horror':11,'Musical':12,'Mystery':13,'Romance':14,'Sci-Fi':15,'Thriller':16,'War':17,'Western':18,'Others':19,
                '古装':1, '动画':2, '冒险':3, '犯罪':4, '奇幻':5, '家庭':6, '恐怖':7, '传记':8, '科幻':9, '惊悚':10,'爱情':11, '历史':12, '歌舞':13, '战争':14, '动作':15,  '舞台艺术':16, '西部':17,  '音乐':18, '悬疑':19,  '运动':20, '儿童':21, '武侠':22, '灾难':23, '戏曲':24, '情色':25, '短片':26, '鬼怪':7,  '喜劇 Comedy':27 , '悬念':19, '惊栗':10, '荒诞':28, '其他':29 }
 MovieTypeList=['其他','古装','动画','冒险','犯罪','奇幻','家庭','恐怖','传记','科幻','惊悚','爱情','历史','歌舞','战争','动作','舞台艺术','西部','音乐','悬疑','运动','儿童','武侠','灾难','戏曲','情色','短片','喜剧','荒诞']
