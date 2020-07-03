@@ -41,7 +41,7 @@ def GetNoOfSex(sex):
     return SexDict[sex]
 
 # 导入电影
-def ImportMovie(title,typeList,length,origin,company,director,content,tagList,actorList,time,imdb,tmdb,cover=None):
+def ImportMovie(title,typeList,length,origin,company,director,content,tagList,actorList,time,imdb,tmdb,language,cover=None):
     if typeList:
         # 获取最终的类型
         temp=1
@@ -75,7 +75,7 @@ def ImportMovie(title,typeList,length,origin,company,director,content,tagList,ac
     if movieQuery.exists():
         return
     movieInstance=Movie.objects.create(MovName=title,MovLength=length,MovOrigin=finalRegion,MovType=finalType,MovCompany=company,
-                         MovDirector=director, MovDescription=content,MovDate=time,MovImdbId=imdb,MovTmdbId=tmdb)
+                         MovDirector=director, MovDescription=content,MovDate=time,MovImdbId=imdb,MovTmdbId=tmdb,MovLanguage=language)
     # 处理封面
     if cover:
         headers={'user - agent': 'Mozilla / 5.0(Windows NT 10.0;\

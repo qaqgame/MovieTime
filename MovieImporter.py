@@ -56,6 +56,7 @@ with open('movies.csv', 'r',encoding='UTF-8') as f:
         date=row[18]
         des=row[16]
         tags=row[17]
+        lan=row[10]
 
         actorList=tagList=None
         if actors:
@@ -73,11 +74,13 @@ with open('movies.csv', 'r',encoding='UTF-8') as f:
         else:
             realDate=datetime.date.min
 
+        if not lan:
+            lan='未知'
 
         if IMDB:
             temp=''.join(list(filter(str.isdigit,IMDB)))
             IMDB=int(temp)
 
         ImportMovie(title=name,typeList=typeList,length=length,origin=regionList,company=None,director=realDirector,
-                    content=des,tagList=tagList,actorList=actorList,time=realDate,imdb=IMDB,tmdb=0,cover=cover)
+                    content=des,tagList=tagList,actorList=actorList,time=realDate,imdb=IMDB,tmdb=0,language=lan,cover=cover)
     print('all finished')
