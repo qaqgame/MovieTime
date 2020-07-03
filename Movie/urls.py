@@ -23,5 +23,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('sign-up/', signup),
     path('login/', login),
-    re_path('^(\w+)$', UserSpace)
+    re_path('^user/(\w+)$', UserSpace)
 ]

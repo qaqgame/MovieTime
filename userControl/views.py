@@ -114,7 +114,7 @@ def UserSpace(request,un):
 
             # 获取电影名
             name=MovInstance.MovName
-            favResultList.append({'Img': cover, 'Name': name, 'Date': date})
+            favResultList.append({'movieimgurl': cover, 'moviename': name, 'extrainfo': date})
 
 
         # 处理session部分
