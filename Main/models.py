@@ -3,7 +3,6 @@ import time
 import datetime
 
 from django.db import models
-
 # Create your models here.
 #电影标签实体
 from django.db.models.signals import pre_save, pre_delete

@@ -5,7 +5,6 @@ from urllib.request import urlopen
 import requests
 from django.core.files import File
 from django.db.models import QuerySet
-
 from Main.models import *
 
 MsgTemplate={'result':True,'reason':'','data':{}}
@@ -224,3 +223,78 @@ def GetFilmList(type,regions,year,order):
     return result
 
 # 获取电影列表(
+
+
+# 封装返回的json
+def wrapTheJson(result, reason, data={}):
+    res = MsgTemplate.copy()
+    res['reason'] = reason
+    res['result'] = result
+    res['data'] = data
+
+
+# 通过用户名获取用户实例
+def GetUser(name):
+    user = User.objects.filter(UserName=name)
+    if user.exists():
+        return user[0]
+    return None
+
+
+title = {
+    'ViewRecord': '浏览记录',
+    'Agree': '点赞记录',
+    'EditRecord': '编辑记录',
+    'FavoriteRecord': '收藏记录',
+    'ReplyRecord': '回复记录',
+}
+
+
+# 映射title
+def GetTitle(name):
+    return title[name]
+
+
+def wrapTheDetail(name, id):
+    if(name == 'ViewRecord'):
+        # record = ViewRecord.objects.filter(TargetId=id)[0]
+        MovName = Movie.objects.filter(MovId=id)[0].MovName
+        return "浏览了" + MovName + "电影"
+        # name.objects.filter()
+    if name == "AgreeRecord":
+        record = Agree.objects.filter(TargetId=id)[0]
+        type = ''
+        if record.AgreeType == 1:
+            type = record.get_AgreeType_display()
+            reply = ReplyRecord.objects.filter(RecordId=id)[0]
+            # 点赞了电影评论
+            # if reply.ReplyType == 1:
+            type = reply.get_ReplyType_display() + type
+            content = reply.ReplyContent
+            return "点赞了" + type + "  " + content
+            # else:
+            #     type = reply.get_ReplyType_display() + type
+            #     content = reply.ReplyContent
+            #     return "点赞了"
+        # 点赞了标签
+        if record.AgreeType == 2:
+            record = Agree.objects.filter(TargetId=id)[0]
+            type = record.get_AgreeType_display()
+            movTag = MovieTag.objects.filter(MovTagId=id)[0]
+            return "点赞了" + type + "  " + movTag.MovTagCnt
+    if name == 'EditRecord':
+        record = EditRecord.objects.filter(TargetId=id)[0]
+        # 修改信息
+        return record.EditContent
+    if name == 'FavoriteRecord':
+        record = FavoriteRecord.objects.filter(TargetId=id)[0]
+        MovName = Movie.objects.filter(MovId=id)[0].MovName
+        return "收藏了" + " 电影 " + MovName
+    if name == 'ReplyRecord':
+        record = ReplyRecord.objects.filter(TargetId=id)[0]
+        # 评论电影
+        if record.ReplyType == 1:
+            MovName = Movie.objects.filter(MovId=id)[0].MovName
+            return "评论了电影 "+ MovName + "\t" + record.ReplyContent
+
+
