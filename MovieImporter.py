@@ -41,7 +41,7 @@ with open('movies.csv', 'r',encoding='UTF-8') as f:
     if len(sys.argv)>1:
         starter=int(sys.argv[1])
     else:
-        starter=0
+        starter=1
     for i in range(0,starter):
         next(reader)
     for row in reader:
