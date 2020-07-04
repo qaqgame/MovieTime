@@ -22,7 +22,7 @@ from userControl.views import timeLine
 from userControl.views import keep
 from userControl.views import ViewRecord
 from userControl.views import movInfo
-
+from userControl.views import getKeep
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,4 +33,5 @@ urlpatterns = [
     # re_path(r'^user/(\w+)/keep$', keep),
     re_path(r'^user/(\w+)/historyrecord$', ViewRecord),
     re_path(r'^movie/(\w+)$', movInfo),
+    re_path(r'user/(\w+)/keep', getKeep),
 ]

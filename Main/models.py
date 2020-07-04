@@ -125,7 +125,7 @@ class ActorManager(models.Manager):
 # 演员
 class Actor(models.Model):
     # 演员id
-    ActorId=models.CharField(max_length=50,unique=True,editable=False,blank=True,verbose_name='演员id')
+    ActorId=models.CharField(max_length=50,unique=True,blank=True,verbose_name='演员id')
     # 演员姓名
     ActorName=models.CharField(max_length=50,verbose_name='演员姓名')
     # 演员地区

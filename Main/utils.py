@@ -255,6 +255,18 @@ title = {
 def GetTitle(name):
     return title[name]
 
+# 获取图片url
+def GetMovImgUrl(MovInstance):
+    imgPath = str(MovInstance.MovImg)
+    fileName = imgPath.split('.')[0]
+    if fileName.__contains__('default_cover'):
+        cover = '/static/cover/default_cover.bmp'
+    else:
+        ext = imgPath.split('.').pop()
+        movId = MovInstance.MovId
+        filename = 'Cover_{0}.{1}'.format(movId, ext)
+        cover = '/static/cover/' + movId + '/' + filename
+    return cover
 
 def wrapTheDetail(name, id):
     if(name == 'ViewRecord'):

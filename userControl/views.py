@@ -4,7 +4,7 @@ from Main import models
 from django.http import JsonResponse
 import json
 # Create your views here.
-from Main.utils import MsgTemplate
+from Main.utils import MsgTemplate, GetMovImgUrl
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
 
 def login(request):
@@ -155,7 +155,7 @@ def ViewRecord(request, un):
             movid = viewRecord.TargetId
             movieInstance = GetFilm(movid)
             movieName = movieInstance.MovName
-            movImg = movieInstance.MovImg
+            movImg = GetMovImgUrl(movieInstance)
             movViewTime = viewRecord.RecordTime
             oneMessage['movieimgurl'] = movImg
             oneMessage['moviename'] = movieName
@@ -175,6 +175,7 @@ def ViewRecord(request, un):
 # 电影详细信息
 def movInfo(request, mn):
     movName = mn
+    print(movName)
     movInstance = models.Movie.objects.filter(MovName=movName)
     if not movInstance.exists():
         res = wrapTheJson("failed", '不存在这部电影')
@@ -188,13 +189,17 @@ def movInfo(request, mn):
     movieinfo['director'] = movInstance.MovDirector
     movieinfo['lastfor'] = movInstance.MovLength
     # 改模型
-    # movieinfo['lang'] = movInstance.Mov
-    movieinfo['coverurl'] = movInstance.MovImg
+    movieinfo['lang'] = movInstance.MovLanguage
+    movieinfo['coverurl'] = GetMovImgUrl(movInstance)
+    movieinfo['description'] = movInstance.MovDescription
 
-    actorIds = models.ActorConnection.objects.filter(MovId=movieinfo.MovId)
+    actorIds = models.ActorConnection.objects.filter(MovId=movInstance.MovId)
     actors = []
+    print(actorIds[0].ActorId, actorIds[0])
     for id in actorIds:
-        actor = models.Actor.objects.filter(ActorId=id)[0].ActorName
+        print(id.ActorId)
+
+        actor = id.ActorId.ActorName
         actors.append(actor)
     movieinfo['actors'] = actors
 
@@ -261,7 +266,7 @@ def search(request):
     allmovies = []
     for movie in movies:
         info = {}
-        info['movieimgurl'] = movie.MovImg
+        info['movieimgurl'] = GetMovImgUrl(movie)
         info['moviename'] = movie.MovName
         # 需要修改
         info['extrainfo'] = movie.MovRate
@@ -291,7 +296,7 @@ def getKeep(request, un):
     user = GetUser(un)
     if user == None:
         return JsonResponse(wrapTheJson("failed", "没有这个用户"))
-    uid = user.UsedId
+    uid = user.UserId
     favMovies = models.FavoriteRecord.objects.filter(UserId=uid)
     data = {}
     timeline = []
@@ -301,10 +306,10 @@ def getKeep(request, un):
         movie = models.Movie.objects.filter(MovId=favId)[0]
         if not movie.exists():
             continue
-        message['movieimgurl'] = movie.MovImg
+        message['movieimgurl'] = GetMovImgUrl(movie)
         message['moviename'] = movie.MovName
         message['extrainfo'] = favMovie.RecordTime
         timeline.append(message)
-    data['timeline'] = timeline
+    data['keepmovies'] = timeline
     res = wrapTheJson("success", '', data)
     return JsonResponse(res)
