@@ -4,7 +4,8 @@ from Main import models
 from django.http import JsonResponse
 import json
 # Create your views here.
-from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes, ParseMovieRegions, GetFilmList
+from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes, ParseMovieRegions, GetFilmList, \
+    RegionList
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
 
 def login(request):
@@ -249,6 +250,15 @@ def timeLine(request, un):
     res = wrapTheJson("success", "", data=data)
     return JsonResponse(res)
 
+# 显示片库页面
+def ShowMoviePage(request):
+    typeList=MovieTypeList
+    regionList=RegionList
+    data={}
+    data['typeList']=typeList
+    data['regionList']=regionList
+    res=wrapTheJson('success','',data=data)
+    return JsonResponse(res)
 
 # 搜索
 def search(request):

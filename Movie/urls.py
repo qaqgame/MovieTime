@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, re_path
-from userControl.views import signup
+from userControl.views import signup, ShowMoviePage
 from userControl.views import login
 from userControl.views import UserSpace
 from userControl.views import timeLine
@@ -23,11 +23,14 @@ from userControl.views import keep
 from userControl.views import ViewRecord
 from userControl.views import movInfo
 from userControl.views import getKeep
+from userControl.views import search
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('sign-up/', signup),
     path('login/', login),
+    path('showmovie/',ShowMoviePage),
+    path('showmovie/search',search),
     re_path(r'^user/(\w+)$', UserSpace),
     re_path(r'^user/(\w+)/timeline$', timeLine),
     # re_path(r'^user/(\w+)/keep$', keep),
