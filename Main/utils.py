@@ -295,7 +295,10 @@ def GetFilmList(type,region,year,name,order,startIdx,length):
     # 名称降序
     elif order==4:
         filmList=filmList.order_by('-MovName')
-    return filmList[startIdx:startIdx+length-1]
+
+    if len(filmList)>startIdx+length-1:
+        return filmList[startIdx:startIdx+length-1]
+    return filmList[startIdx:]
 
 # 获取电影列表(
 # 根据导演名搜索电影
