@@ -3,7 +3,6 @@ import time
 import datetime
 
 from django.db import models
-
 # Create your models here.
 #电影标签实体
 from django.db.models.signals import pre_save, pre_delete
@@ -86,7 +85,12 @@ class Movie(models.Model):
     MovDescription=models.TextField(verbose_name='电影描述',default='无')
     # 电影上映时间
     MovDate=models.DateField(auto_now=False,auto_now_add=False,verbose_name='电影上映时间',default=datetime.MINYEAR)
-
+    # 电影语言
+    MovLanguage=models.CharField(max_length=50,verbose_name='电影语言',default='未知')
+    # 平均分
+    MovScore=models.FloatField(verbose_name='电影平均分',default=0.0)
+    # 评分数
+    MovScoreCount=models.IntegerField(verbose_name='评分人数',default=0)
     #IMDB id
     MovImdbId=models.IntegerField(verbose_name='IMDB',default=0)
     #tmdb id
@@ -235,11 +239,14 @@ class ViewRecord(BaseRecord):
 # 点赞manager
 class AgreeManager(models.Manager):
     def create(self, *args, **kwargs):
-        instance = IDCount.objects.get(Type='Agree')
-        if not instance.exists():
+        all = IDCount.objects.filter(Type='Agree')
+        if not all.exists():
+            print('create movie count')
             cins = IDCount.objects.create(Type='Agree')
             cins.save()
             instance = cins
+        else:
+            instance = all[0]
         cnt = instance.Count
         instance.Count += 1
         instance.save()
@@ -258,11 +265,14 @@ class Agree(BaseRecord):
 # 编辑manager
 class EditManager(models.Manager):
     def create(self, *args, **kwargs):
-        instance = IDCount.objects.get(Type='Edit')
-        if not instance.exists():
+        all = IDCount.objects.filter(Type='Edit')
+        if not all.exists():
+            print('create movie count')
             cins = IDCount.objects.create(Type='Edit')
             cins.save()
             instance = cins
+        else:
+            instance = all[0]
         cnt = instance.Count
         instance.Count += 1
         instance.save()
@@ -284,11 +294,14 @@ class EditRecord(BaseRecord):
 # 收藏manager
 class FavManager(models.Manager):
     def create(self, *args, **kwargs):
-        instance = IDCount.objects.get(Type='Fav')
-        if not instance.exists():
+        all = IDCount.objects.filter(Type='Fav')
+        if not all.exists():
+            print('create movie count')
             cins = IDCount.objects.create(Type='Fav')
             cins.save()
             instance = cins
+        else:
+            instance = all[0]
         cnt = instance.Count
         instance.Count += 1
         instance.save()
@@ -305,11 +318,14 @@ class FavoriteRecord(BaseRecord):
 # 评论manager
 class ReplyManager(models.Manager):
     def create(self, *args, **kwargs):
-        instance = IDCount.objects.get(Type='Reply')
-        if not instance.exists():
+        all = IDCount.objects.filter(Type='Reply')
+        if not all.exists():
+            print('create movie count')
             cins = IDCount.objects.create(Type='Reply')
             cins.save()
             instance = cins
+        else:
+            instance = all[0]
         cnt = instance.Count
         instance.Count += 1
         instance.save()
@@ -361,6 +377,25 @@ class IDCount(models.Model):
 #触发器部分
 ####
 
+# 处理评分
+@receiver(pre_save,sender=ReplyRecord)
+def Pre_Save_RepRcd_Handler(sender,instance,**kwargs):
+    # 如果该评论为电影评分
+    if instance._state.adding and instance.ReplyType==1:
+        movId=instance.TargetId
+        # 查找目标电影
+        movInstances=Movie.objects.filter(MovId=movId)
+        # 当该电影存在时，进行后续处理
+        if movInstances.exists():
+            movInstance=movInstances[0]
+            # 更新平均分
+            allScore=movInstance.MovScore*movInstance.MovScoreCount
+            allScore+=instance.ReplyGrade
+            realScore=float(allScore)/(movInstance.MovScoreCount+1)
+            movInstance.MovScore=realScore
+            movInstance.MovScoreCount+=1
+            movInstance.save()
+
 # 处理标签删除情况
 @receiver(pre_delete,sender=MovieTag)
 def Pre_Delete_MovieTag_Handler(sender,instance,**kwargs):
@@ -378,7 +413,7 @@ def Pre_Save_ViewRcd_Handler(sender,instance,**kwargs):
 @receiver(pre_save,sender=Agree)
 def Pre_Save_Agree_Handler(sender,instance,**kwargs):
     # 如果点赞的是标签
-    if instance.AgreeType ==2:
+    if instance._state.adding and instance.AgreeType ==2:
         # 获取目标id
         temp=instance.TargetId
         # 获取id
@@ -388,7 +423,7 @@ def Pre_Save_Agree_Handler(sender,instance,**kwargs):
         target.AgreeCount +=1
         target.save()
     # 点赞的是评论
-    elif instance.AgreeType==1:
+    elif instance._state.adding and instance.AgreeType==1:
         # 获取目标id
         temp = instance.TargetId
         # 查询
@@ -400,7 +435,7 @@ def Pre_Save_Agree_Handler(sender,instance,**kwargs):
 @receiver(pre_delete,sender=Agree)
 def Pre_Delete_Agree_Handler(sender,instance,**kwargs):
     # 如果点赞的是标签
-    if instance.AgreeType == 2:
+    if instance._state.adding and instance.AgreeType == 2:
         # 获取目标id
         temp = instance.TargetId
         # 获取id
@@ -410,7 +445,7 @@ def Pre_Delete_Agree_Handler(sender,instance,**kwargs):
         target.AgreeCount -= 1
         target.save()
     # 点赞的是评论
-    elif instance.AgreeType == 1:
+    elif instance._state.adding and instance.AgreeType == 1:
         # 获取目标id
         temp = instance.TargetId
         # 查询

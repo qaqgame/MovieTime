@@ -18,10 +18,19 @@ from django.urls import path, re_path
 from userControl.views import signup
 from userControl.views import login
 from userControl.views import UserSpace
+from userControl.views import timeLine
+from userControl.views import keep
+from userControl.views import ViewRecord
+from userControl.views import movInfo
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('sign-up/', signup),
     path('login/', login),
-    re_path('^user/(\w+)$', UserSpace)
+    re_path(r'^user/(\w+)$', UserSpace),
+    re_path(r'^user/(\w+)/timeline$', timeLine),
+    # re_path(r'^user/(\w+)/keep$', keep),
+    re_path(r'^user/(\w+)/historyrecord$', ViewRecord),
+    re_path(r'^movie/(\w+)$', movInfo),
 ]
