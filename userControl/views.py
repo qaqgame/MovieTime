@@ -218,8 +218,7 @@ def movInfo(request, mn):
 
 
 # 时间线
-def timeLine(request,un):
-    #uname = request.session.get('user1')
+def timeLine(request, un):
     uid = GetUser(un).UserId
     timelines = []
     for sub in models.BaseRecord.__subclasses__():
@@ -287,3 +286,25 @@ def keep(request):
     res = wrapTheJson("success", '')
     return JsonResponse(res)
 
+
+def getKeep(request, un):
+    user = GetUser(un)
+    if user == None:
+        return JsonResponse(wrapTheJson("failed", "没有这个用户"))
+    uid = user.UsedId
+    favMovies = models.FavoriteRecord.objects.filter(UserId=uid)
+    data = {}
+    timeline = []
+    for favMovie in favMovies:
+        message = {}
+        favId = favMovie.TargetId
+        movie = models.Movie.objects.filter(MovId=favId)[0]
+        if not movie.exists():
+            continue
+        message['movieimgurl'] = movie.MovImg
+        message['moviename'] = movie.MovName
+        message['extrainfo'] = favMovie.RecordTime
+        timeline.append(message)
+    data['timeline'] = timeline
+    res = wrapTheJson("success", '', data)
+    return JsonResponse(res)
