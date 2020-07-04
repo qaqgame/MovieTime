@@ -4,7 +4,7 @@ from Main import models
 from django.http import JsonResponse
 import json
 # Create your views here.
-from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes, ParseMovieRegions
+from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes, ParseMovieRegions, GetFilmList
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
 
 def login(request):
@@ -252,20 +252,31 @@ def timeLine(request, un):
 
 # 搜索
 def search(request):
-    type = request.GET.get('type', '')
-    field = request.GET.get('field', '')
-    time = request.GET.get('time', '')
+    type = request.GET.get('type', -1)
+    # 生成type
+    if type==-1:
+        typeList=(~(1<<30))
+    else:
+        typeList=(1<<type)
+    field = request.GET.get('field', -1)
+    # 生成区域
+    if field==-1:
+        regionList=(~(1<<5))
+    else:
+        regionList=(1<<field)
+    time = request.GET.get('time', -1)
     moviename = request.GET.get('moviename', '')
-    conditions = {}
-    if type != '':
-        conditions['MovType'] = type
-    if field != '':
-        conditions['MovOrigin'] = field
-    if time != '':
-        conditions['MovDate'] = time
-    if moviename != '':
-        conditions['MovName'] = moviename
-    movies = models.Movie.objects.filter(**conditions)
+    startIdx= request.GET.get('start',0)
+    # conditions = {}
+    # if type != '':
+    #     conditions['MovType'] = type
+    # if field != '':
+    #     conditions['MovOrigin'] = field
+    # if time != '':
+    #     conditions['MovDate'] = time
+    # if moviename != '':
+    #     conditions['MovName'] = moviename
+    movies = GetFilmList(typeList,regionList,time,moviename,0,startIdx,20)
     if not movies.exists():
         res = wrapTheJson("failed", "没有符合条件的电影")
         return JsonResponse(res)
@@ -274,6 +285,7 @@ def search(request):
     for movie in movies:
         info = {}
         info['movieimgurl'] = GetMovImgUrl(movie)
+        info['movieId']=movie.MovId
         info['moviename'] = movie.MovName
         # 需要修改
         info['extrainfo'] = movie.MovRate

@@ -164,6 +164,39 @@ def ParseMovieRegions(region):
             result.append(RegionList[i])
     return result
 
+# 根据类型list获取type
+def ToTypeNum(typeList):
+    if not typeList:
+        return 1
+    temp = 1
+    if isinstance(typeList,list):
+        finalType = 0
+        for type in typeList:
+            typeNo = GetNoOfMovieType(type)
+            finalType = finalType | (temp << typeNo)
+        return finalType
+    #非list直接获取
+    elif isinstance(typeList,str):
+        return (temp<<GetNoOfMovieType(typeList))
+
+
+# 根据地区list获取region
+def ToRegionNum(regionList):
+    if not regionList:
+        return 16
+    temp=1
+
+    if isinstance(regionList, list):
+        finalRegion = 0
+        for region in regionList:
+            regionCode = GetReigionCode(region)
+            finalRegion = finalRegion | (temp << regionCode)
+        return finalRegion
+    # 非list直接获取
+    elif isinstance(regionList,str):
+        return temp << GetReigionCode(regionList)
+
+
 def CreateActorConn(actor):
     # 查询演员
     queryResult = Actor.objects.filter(ActorName=actor)
@@ -235,27 +268,34 @@ def GetFilmByDate(year):
         result.append(mov.MovId)
     return result
 
-# 获取电影列表并排序
-def GetFilmList(type,regions,year,order):
+# 获取电影列表并排序 startIdx:开始索引 length：获取长度
+def GetFilmList(type,region,year,name,order,startIdx,length):
+    types=type
+    regions=region
     tempDate = datetime.datetime.strptime(str(year), "%Y")
     realDate = tempDate.date()
-    filmList = Movie.objects.extra(where=['MovType&%d!=0'], params=[type]).extra(where=['MovOrigin&%d!=0'],params=[regions]).filter(MovDate=realDate)
-    #日期升序
+    filmList = Movie.objects.extra(where=['MovType&%d!=0'], params=[types]).extra(where=['MovOrigin&%d!=0'],params=[regions])
+    if year!=-1:
+        filmList=filmList.filter(MovDate=realDate)
+    if name:
+        filmList=filmList.filter(MovName__contains=name)
+
+    # 默认排序
     if order==0:
+        filmList=filmList.order_by('MovId')
+    #日期升序
+    elif order==1:
         filmList=filmList.order_by('MovDate')
     # 日期降序
-    elif order==1:
+    elif order==2:
         filmList=filmList.order_by('-MovDate')
     # 名称升序
-    elif order==2:
+    elif order==3:
         filmList=filmList.order_by('MovName')
     # 名称降序
-    elif order==3:
+    elif order==4:
         filmList=filmList.order_by('-MovName')
-    result = []
-    for mov in filmList:
-        result.append(mov.MovId)
-    return result
+    return filmList[startIdx:startIdx+length-1]
 
 # 获取电影列表(
 # 根据导演名搜索电影
