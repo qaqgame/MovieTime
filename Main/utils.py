@@ -19,7 +19,7 @@ RegionDict={'中国大陆':0,'美国':1,'韩国':2,'法国':1,'中国香港':0,'
             '南韩':3,'印度indian':3,'法國':1,'France':1,'加拿大Canada':1,'美國':1,'USA':1, '加拿大canada':1,'中國大陸China':0, '中國大陸':0, 'China':0,'india':3,
             '德國':1,'Germany':1, 'indian':3, 'USA（NBC电视网）':1,'USA（FOX电视网）':1,'USA（ABC电视网）':1,'Colombia':1,'United':1,'中国':0,'香港':0, 'BBC':1,
             '八一电影制片厂':0}
-RegionList=['国产','欧美','日韩','印泰','其他']
+RegionList=['中国大陆','欧美','日韩','印泰','其他']
 # 获取type对应的编号
 def GetNoOfMovieType(type):
     if not type in MovieTypeDict.keys():
@@ -343,7 +343,7 @@ def GetMovImgUrl(MovInstance):
     imgPath = str(MovInstance.MovImg)
     fileName = imgPath.split('.')[0]
     if fileName.__contains__('default_cover'):
-        cover = '/static/cover/default_cover.bmp'
+        cover = '/static/cover/default_cover.png'
     else:
         ext = imgPath.split('.').pop()
         movId = MovInstance.MovId

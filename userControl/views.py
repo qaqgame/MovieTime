@@ -184,7 +184,7 @@ def movInfo(request, mn):
     data = {}
     movieinfo = {}
     movieinfo['name'] = movInstance.MovName
-    types=ParseMovieTypes(movInstance.MovType)
+    types = ParseMovieTypes(movInstance.MovType)
     movieinfo['type'] = types
     movieinfo['movtime'] = movInstance.MovDate
     regions=ParseMovieRegions(movInstance.MovOrigin)

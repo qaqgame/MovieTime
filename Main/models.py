@@ -74,7 +74,7 @@ class Movie(models.Model):
     # 电影时长:
     MovLength=models.IntegerField(verbose_name='电影时长',default=0)
     # 电影封面
-    MovImg=models.ImageField(upload_to=cover_directory_path,verbose_name='电影封面', default='static/cover/default_cover.bmp')
+    MovImg=models.ImageField(upload_to=cover_directory_path,verbose_name='电影封面', default='static/cover/default_cover.png')
     # 电影产地
     MovOrigin=models.SmallIntegerField(verbose_name='电影产地',default=16)
     # 电影公司

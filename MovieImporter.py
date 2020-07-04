@@ -25,7 +25,9 @@ def GetList(items):
     if '/' in tempList:
         tempList=tempList.split('/')
         for i in tempList:
-            result.append(i)
+            i = i.strip()
+            if i:
+                result.append(i)
     else:
         result.append(tempList)
     return result
