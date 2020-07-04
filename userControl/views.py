@@ -4,7 +4,7 @@ from Main import models
 from django.http import JsonResponse
 import json
 # Create your views here.
-from Main.utils import MsgTemplate, GetMovImgUrl
+from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
 
 def login(request):
@@ -184,14 +184,21 @@ def movInfo(request, mn):
     data = {}
     movieinfo = {}
     movieinfo['name'] = movInstance.MovName
-    movieinfo['type'] = movInstance.MovType
+    tmpstr = str(movInstance.MovType)
+    types = []
+    for i in range(tmpstr.__len__()):
+        types.append(MovieTypeList[int(tmpstr[i])])
+    print(types)
+    movieinfo['type'] = types
     movieinfo['time'] = movInstance.MovDate
+    movieinfo['area'] = movInstance.MovOrigin
     movieinfo['director'] = movInstance.MovDirector
     movieinfo['lastfor'] = movInstance.MovLength
     # 改模型
     movieinfo['lang'] = movInstance.MovLanguage
     movieinfo['coverurl'] = GetMovImgUrl(movInstance)
     movieinfo['description'] = movInstance.MovDescription
+    movieinfo['rate'] = movInstance.MovScore
 
     actorIds = models.ActorConnection.objects.filter(MovId=movInstance.MovId)
     actors = []
