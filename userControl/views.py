@@ -190,9 +190,12 @@ def movInfo(request, mn):
         types.append(MovieTypeList[int(tmpstr[i])])
     print(types)
     movieinfo['type'] = types
-    movieinfo['time'] = movInstance.MovDate
+    movieinfo['movtime'] = movInstance.MovDate
     movieinfo['area'] = movInstance.MovOrigin
-    movieinfo['director'] = movInstance.MovDirector
+    if movInstance.MovDirector:
+        movieinfo['director'] = movInstance.MovDirector.ActorName
+    else:
+        movieinfo['director']='未知'
     movieinfo['lastfor'] = movInstance.MovLength
     # 改模型
     movieinfo['lang'] = movInstance.MovLanguage
@@ -202,7 +205,7 @@ def movInfo(request, mn):
 
     actorIds = models.ActorConnection.objects.filter(MovId=movInstance.MovId)
     actors = []
-    print(actorIds[0].ActorId, actorIds[0])
+    # print(actorIds[0].ActorId, actorIds[0])
     for id in actorIds:
         print(id.ActorId)
 
