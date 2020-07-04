@@ -303,7 +303,7 @@ def GetMovImgUrl(MovInstance):
     imgPath = str(MovInstance.MovImg)
     fileName = imgPath.split('.')[0]
     if fileName.__contains__('default_cover'):
-        cover = '/static/cover/default_cover.bmp'
+        cover = '/static/cover/default_cover.png'
     else:
         ext = imgPath.split('.').pop()
         movId = MovInstance.MovId
