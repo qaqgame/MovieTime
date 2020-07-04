@@ -146,6 +146,24 @@ def ImportActor(actorName,sex,area):
     instance=Actor.objects.create(ActorName=actorName,ActorSex=sexNo,ActorArea=area)
     #instance.save()
 
+# 获取电影类型列表
+def ParseMovieTypes(type):
+    temp=1
+    result=[]
+    for i in range(len(MovieTypeList)):
+        if ((temp<<i)&type)!=0:
+            result.append(MovieTypeList[i])
+    return result
+
+# 获取电影地区
+def ParseMovieRegions(region):
+    temp=1
+    result=[]
+    for i in range(len(RegionList)):
+        if ((temp<<i)&region)!=0:
+            result.append(RegionList[i])
+    return result
+
 def CreateActorConn(actor):
     # 查询演员
     queryResult = Actor.objects.filter(ActorName=actor)
