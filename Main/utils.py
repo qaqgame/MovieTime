@@ -131,7 +131,7 @@ def ImportMovie(title,typeList,length,origin,company,director,content,tagList,ac
     if actorList:
         # 处理演员
         for actor in actorList:
-            actorInstance=CreateActorConn(actor,movieInstance)
+            actorInstance=CreateActorConn(actor)
             tempQuery = ActorConnection.objects.filter(MovId=movieInstance, ActorId=actorInstance)
             if tempQuery.exists():
                 continue
