@@ -231,7 +231,7 @@ def wrapTheJson(result, reason, data={}):
     res['reason'] = reason
     res['result'] = result
     res['data'] = data
-
+    return res
 
 # 通过用户名获取用户实例
 def GetUser(name):

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
-from Main import models
 from Main.models import *
+from Main import models
 from django.http import JsonResponse
 import json
 # Create your views here.
@@ -162,7 +162,7 @@ def ViewRecord(request):
             oneMessage['extrainfo'] =  movViewTime
             movList.append(oneMessage)
         movList.sort(key=lambda w:w["extrainfo"])
-        data['timeline'] = movList
+        data['histories'] = movList
         res['reason'] = ''
         res['result'] = 'success'
         res['data'] = data
@@ -218,9 +218,8 @@ def movInfo(request, mn):
 
 
 # 时间线
-def timeLine(request):
-    uname = request.session.get('user1')
-    uid = GetUser(uname).UserId
+def timeLine(request, un):
+    uid = GetUser(un).UserId
     timelines = []
     for sub in models.BaseRecord.__subclasses__():
         timeline = {}
@@ -287,3 +286,25 @@ def keep(request):
     res = wrapTheJson("success", '')
     return JsonResponse(res)
 
+
+def getKeep(request, un):
+    user = GetUser(un)
+    if user == None:
+        return JsonResponse(wrapTheJson("failed", "没有这个用户"))
+    uid = user.UsedId
+    favMovies = models.FavoriteRecord.objects.filter(UserId=uid)
+    data = {}
+    timeline = []
+    for favMovie in favMovies:
+        message = {}
+        favId = favMovie.TargetId
+        movie = models.Movie.objects.filter(MovId=favId)[0]
+        if not movie.exists():
+            continue
+        message['movieimgurl'] = movie.MovImg
+        message['moviename'] = movie.MovName
+        message['extrainfo'] = favMovie.RecordTime
+        timeline.append(message)
+    data['timeline'] = timeline
+    res = wrapTheJson("success", '', data)
+    return JsonResponse(res)

@@ -103,6 +103,7 @@ class Movie(models.Model):
     class Meta:
         verbose_name='电影信息'
         verbose_name_plural='电影信息'
+        managed = True
 
 # 演员manager
 class ActorManager(models.Manager):
