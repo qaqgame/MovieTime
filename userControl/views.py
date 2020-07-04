@@ -207,7 +207,7 @@ def movInfo(request, mn):
     movieinfo['actors'] = actors
 
     # 评分
-    # movieinfo['rate'] = movInstance.MovRate
+    movieinfo['rate'] = movInstance.MovScore
     uname = GetUser(request.session.get('user1'))
     if not uname:
         ifKeeped = 'false'
