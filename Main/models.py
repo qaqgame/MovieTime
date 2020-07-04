@@ -148,7 +148,7 @@ class ActorConnection(models.Model):
     MovId = models.ForeignKey(to='Movie', to_field='MovId', verbose_name='电影id', on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name_plural=verbose_name='参演信息'
+        verbose_name_plural=verbose_name='参演/导演信息'
         unique_together=['ActorId','MovId']
         index_together=['ActorId','MovId']
 
