@@ -186,7 +186,10 @@ def movInfo(request, mn):
     movieinfo['name'] = movInstance.MovName
     movieinfo['type'] = movInstance.MovType
     movieinfo['time'] = movInstance.MovDate
-    movieinfo['director'] = movInstance.MovDirector
+    if movInstance.MovDirector:
+        movieinfo['director'] = movInstance.MovDirector.ActorName
+    else:
+        movieinfo['director']='未知'
     movieinfo['lastfor'] = movInstance.MovLength
     # 改模型
     movieinfo['lang'] = movInstance.MovLanguage

@@ -80,7 +80,7 @@ class Movie(models.Model):
     # 电影公司
     MovCompany=models.CharField(max_length=100,verbose_name="电影公司",default='未知')
     # 电影导演
-    MovDirector=models.CharField(max_length=100,verbose_name='电影导演',default='未知')
+    MovDirector=models.ForeignKey(to='Actor', to_field='ActorId', verbose_name='导演id',null=True,on_delete=models.SET_NULL)
     # 电影简介
     MovDescription=models.TextField(verbose_name='电影描述',default='无')
     # 电影上映时间

@@ -72,21 +72,21 @@ def ImportMovie(title,typeList,length,origin,company,director,content,tagList,ac
     #创建导演
     directorInstance=CreateActorConn(director)
 
-    movieQuery=Movie.objects.filter(MovName=title,MovLength=length,MovDirector=directorInstance.ActorId)
+    movieQuery=Movie.objects.filter(MovName=title,MovLength=length,MovDirector=directorInstance)
     # 若该电影已存在则直接return
     if movieQuery.exists():
         return
     movieInstance=Movie.objects.create(MovName=title,MovLength=length,MovOrigin=finalRegion,MovType=finalType,MovCompany=company,
-                         MovDirector=directorInstance.ActorId, MovDescription=content,MovDate=time,MovImdbId=imdb,MovTmdbId=tmdb,MovLanguage=language)
+                         MovDirector=directorInstance, MovDescription=content,MovDate=time,MovImdbId=imdb,MovTmdbId=tmdb,MovLanguage=language)
 
-    # 处理导演信息
-    tempQuery = ActorConnection.objects.filter(MovId=movieInstance, ActorId=directorInstance)
-    if tempQuery.exists():
-        return
-    else:
-        # 添加演出信息
-        actConn = ActorConnection.objects.create(MovId=movieInstance, ActorId=directorInstance)
-        actConn.save()
+    # # 处理导演信息
+    # tempQuery = ActorConnection.objects.filter(MovId=movieInstance, ActorId=directorInstance)
+    # if tempQuery.exists():
+    #     return
+    # else:
+    #     # 添加演出信息
+    #     actConn = ActorConnection.objects.create(MovId=movieInstance, ActorId=directorInstance)
+    #     actConn.save()
 
     # 处理封面
     if cover:
@@ -240,7 +240,15 @@ def GetFilmList(type,regions,year,order):
     return result
 
 # 获取电影列表(
-
+# 根据导演名搜索电影
+# return:QuerySet
+def SearchFilmsByDirector(directorName):
+    directorInstances=Actor.objects.filter(ActorName=directorName)
+    #如果不存在则返回空
+    if not directorInstances.exists():
+        return None
+    films=Movie.objects.filter(MovDirector=directorInstances[0])
+    return films
 
 # 封装返回的json
 def wrapTheJson(result, reason, data={}):
