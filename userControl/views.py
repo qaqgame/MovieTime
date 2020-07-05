@@ -221,11 +221,12 @@ def movInfo(request, mn):
 
     # 评分
     movieinfo['rate'] = movInstance.MovScore
-    uname = GetUser(request.session.get('user1'))
-    if not uname:
+    uid = GetUser(request.session.get('user1'))
+    print(uid.UserId)
+    if not uid:
         ifKeeped = 'false'
     else:
-        uid = GetUser(uname)
+        # uid = GetUser(uname)
         fav = models.FavoriteRecord.objects.filter(UserId=uid, TargetId=movInstance.MovId)
         if not fav:
             ifKeeped = 'false'
@@ -380,14 +381,16 @@ def GetRecByIds(movids,type,count):
 
 def getRec(request):
     username = request.session.get("user1", '')
+    print(username)
     if username == '':
         res = wrapTheJson("failed", "session中没有用户名")
         return JsonResponse(res)
     userInstance = GetUser(username)
-    if userInstance:
+    if not userInstance:
         res = wrapTheJson("failed", "没有这个用户")
         return JsonResponse(res)
     uid = userInstance.UserId
+    print(userInstance.Types)
     allmovies = []
     comics = []
     crimes = []
@@ -423,6 +426,8 @@ def getRec(request):
         #         Recmovies.append(GetFilm(recmovid))
         # Recmovies_wrap = wrapTheMovie(Recmovies)
         # alltypemovies = []
+        testP1 = GetRecByIds(movids=movids,type=defaultAllType,count=20)
+        print("testP1",testP1.__len__())
         allmovies.append(wrapTheMovie(GetRecByIds(movids=movids,type=defaultAllType,count=20)))
 
         comics.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<2),count=20)))

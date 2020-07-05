@@ -187,7 +187,7 @@ class User(models.Model):
     UserMaxExp=models.SmallIntegerField(verbose_name='用户最大经验', default=1000)
     # 邮箱
     Email = models.EmailField()
-    Types = models.IntegerField(verbose_name="用户喜欢的类型", default=0)
+    Types = models.IntegerField(verbose_name="用户喜欢的类型", default=~(1<<30))
     # 是否有浏览
     HasView=models.BooleanField(default=False,verbose_name='是否有过浏览记录')
 
@@ -419,7 +419,7 @@ def Pre_Delete_MovieTag_Handler(sender,instance,**kwargs):
 @receiver(pre_save,sender=ViewRecord)
 def Pre_Save_ViewRcd_Handler(sender,instance,**kwargs):
     # 将该用户的拥有浏览设为true
-    user=User.objects.get(UserId=instance.UserId)
+    user=User.objects.get(UserId=instance.UserId.UserId)
     user.HasView=True
     user.save()
 

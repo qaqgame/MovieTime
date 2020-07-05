@@ -274,7 +274,7 @@ def GetFilmByDate(year):
     return result
 
 # 获取电影列表并排序 startIdx:开始索引 length：获取长度
-def GetFilmList(type,region,name,order,startIdx,length):
+def GetFilmList(type=~(1<<30),region=~(1<<5),name='',order=0,startIdx=0,length=20):
     types=type
     regions=region
     # tempDate = datetime.datetime.strptime(str(year), "%Y")

@@ -7,7 +7,7 @@ from urllib.request import urlopen
 
 from django.core.files import File
 
-from Main.models import Movie, IDCount, Actor, MovieTag
+
 
 pwd = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(pwd + "../")
@@ -17,8 +17,11 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Movie.settings')
 import django
 
 django.setup()
-
-Movie.objects.all().remove()
-Actor.objects.all().remove()
-MovieTag.objects.all().remove()
-IDCount.objects.all().remove()
+from Main.models import Movie, IDCount, Actor, MovieTag, CosRelation, FavoriteRecord, ViewRecord
+Movie.objects.all().delete()
+Actor.objects.all().delete()
+MovieTag.objects.all().delete()
+IDCount.objects.all().delete()
+CosRelation.objects.all().delete()
+FavoriteRecord.objects.all().delete()
+ViewRecord.objects.all().delete()

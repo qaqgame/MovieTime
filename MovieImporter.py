@@ -89,5 +89,5 @@ with open('movies.csv', 'r',encoding='UTF-8') as f:
             IMDB=int(temp)
 
         ImportMovie(title=name,typeList=typeList,length=length,origin=regionList,company=None,director=realDirector,
-                    content=des,tagList=tagList,actorList=actorList,time=realDate,imdb=IMDB,tmdb=0,originId=originId,language=lan,cover=cover)
+                    content=des,tagList=tagList,actorList=actorList,time=realDate,imdb=IMDB,tmdb=0,originId=originId,language=lan,cover=cover,score=score)
     print('all finished')
