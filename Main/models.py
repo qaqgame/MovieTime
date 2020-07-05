@@ -95,6 +95,8 @@ class Movie(models.Model):
     MovImdbId=models.IntegerField(verbose_name='IMDB',default=0)
     #tmdb id
     MovTmdbId=models.IntegerField(verbose_name='TMDB',default=0)
+    #原始id
+    MovOriginId=models.CharField(max_length=50,verbose_name='原始id')
 
     objects=MovieManager()
     def __str__(self):
