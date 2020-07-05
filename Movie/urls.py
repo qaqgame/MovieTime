@@ -33,7 +33,7 @@ urlpatterns = [
     path('showmovie/search',search),
     re_path(r'^user/(\w+)$', UserSpace),
     re_path(r'^user/(\w+)/timeline$', timeLine),
-    # re_path(r'^user/(\w+)/keep$', keep),
+    re_path(r'^keepMovie$', keep),
     re_path(r'^user/(\w+)/historyrecord$', ViewRecord),
     re_path(r'^movie/(\w+)$', movInfo),
     re_path(r'user/(\w+)/keep', getKeep),
