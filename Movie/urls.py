@@ -24,6 +24,7 @@ from userControl.views import ViewRecord
 from userControl.views import movInfo
 from userControl.views import getKeep
 from userControl.views import search
+from userControl.views import index
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,8 +34,9 @@ urlpatterns = [
     path('showmovie/search',search),
     re_path(r'^user/(\w+)$', UserSpace),
     re_path(r'^user/(\w+)/timeline$', timeLine),
-    re_path(r'^keepMovie$', keep),
+    path('keepMovie', keep),
     re_path(r'^user/(\w+)/historyrecord$', ViewRecord),
     re_path(r'^movie/(\w+)$', movInfo),
     re_path(r'user/(\w+)/keep', getKeep),
+    path('index/',index)
 ]
