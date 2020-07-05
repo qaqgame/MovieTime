@@ -187,6 +187,7 @@ class User(models.Model):
     UserMaxExp=models.SmallIntegerField(verbose_name='用户最大经验', default=1000)
     # 邮箱
     Email = models.EmailField()
+    Types = models.IntegerField(verbose_name="用户喜欢的类型", default=0)
     # 是否有浏览
     HasView=models.BooleanField(default=False,verbose_name='是否有过浏览记录')
 
