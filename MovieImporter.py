@@ -52,6 +52,7 @@ with open('movies.csv', 'r',encoding='UTF-8') as f:
         actors=row[3]
         cover=row[4]
         director=row[5]
+        score=row[6]
         types=row[8]
         IMDB=row[9]
         length=row[11]
@@ -79,6 +80,9 @@ with open('movies.csv', 'r',encoding='UTF-8') as f:
 
         if not lan:
             lan='未知'
+
+        if not score:
+            score=0
 
         if IMDB:
             temp=''.join(list(filter(str.isdigit,IMDB)))

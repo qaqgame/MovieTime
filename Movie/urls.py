@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, re_path
-from userControl.views import signup, ShowMoviePage
+from userControl.views import signup, ShowMoviePage, getRec
 from userControl.views import login
 from userControl.views import UserSpace
 from userControl.views import timeLine
@@ -38,5 +38,6 @@ urlpatterns = [
     re_path(r'^user/(\w+)/historyrecord$', ViewRecord),
     re_path(r'^movie/(\w+)$', movInfo),
     re_path(r'user/(\w+)/keep', getKeep),
-    path('index/',index)
+    path('index/',index),
+    path('recom/',getRec)
 ]

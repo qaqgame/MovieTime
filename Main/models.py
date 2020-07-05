@@ -367,7 +367,17 @@ class MovTagConnection(models.Model):
         # 添加联合索引
         index_together=['MovTagId','MovId']
 
+# 相关度
+class CosRelation(models.Model):
+    Movie1=models.CharField(verbose_name='电影1id',max_length=50)
+    Movie1Origin=models.CharField(verbose_name='电影1原始id',max_length=50)
+    Movie2=models.CharField(verbose_name='电影2id',max_length=50)
+    Movie2Origin=models.CharField(verbose_name='电影2原始id',max_length=50)
+    Relation=models.FloatField(verbose_name='相关系数')
 
+    class Meta:
+        unique_together=['Movie1','Movie2']
+        index_together=['Movie1','Movie2']
 # id记录
 class IDCount(models.Model):
     # 类型
