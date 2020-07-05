@@ -23,6 +23,6 @@ ids = ids_r.reshape(21113, 30)
 distances = distances_r.reshape(21113, 30)
 
 for i in range(21113):
-    for j in range(29):
+    for j in range(30):
         ImportRelation(movies_index[i], ids[i][j], distances[i][j])
 print('all finished')
