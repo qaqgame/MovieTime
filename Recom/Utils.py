@@ -2,8 +2,8 @@
 from Recom.models import CosRelation
 
 def ImportRelation(id1,id1Origin,id2,id2Origin,relation):
-    movId1='Mov'+str(id1)
-    movId2='Mov'+str(id2)
+    # movId1='Mov'+str(id1)
+    # movId2='Mov'+str(id2)
 
     # 如果存在则直接结束
     if CosRelation.objects.filter(Movie1=movId1,Movie2=movId2).exists():
@@ -37,4 +37,3 @@ def GetRecommList(id,count):
             tempList.append(temp)
 
     return result
-

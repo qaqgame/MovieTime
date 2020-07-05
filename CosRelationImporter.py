@@ -17,12 +17,15 @@ from Recom.Utils import ImportRelation
 import numpy as np
 
 movies_index = np.loadtxt('movies_index.csv', dtype = np.int, delimiter=',')
+
 ids_r = np.loadtxt('ids.csv',dtype = np.int,delimiter=',')
 distances_r = np.loadtxt('distances.csv',dtype = np.float32,delimiter=',')
 ids = ids_r.reshape(21113, 30)
 distances = distances_r.reshape(21113, 30)
 
+dic = np.load('movies_dic.npy', allow_pickle=True).item()
+
 for i in range(21113):
     for j in range(30):
-        ImportRelation(movies_index[i], ids[i][j], distances[i][j])
+        ImportRelation(dic[movies_index[i]], movies_index[i], dic[ids[i][j]], ids[i][j], distances[i][j])
 print('all finished')
