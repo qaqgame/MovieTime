@@ -17,8 +17,8 @@ from Recom.Utils import ImportRelation
 import numpy as np
 
 movies_index = np.loadtxt('movies_index.csv', dtype = np.int, delimiter=',')
-ids_r = np.loadtxt('./result_top30/ids.csv',dtype = np.int,delimiter=',')
-distances_r = np.loadtxt('./result_top30/distances.csv',dtype = np.float32,delimiter=',')
+ids_r = np.loadtxt('ids.csv',dtype = np.int,delimiter=',')
+distances_r = np.loadtxt('distances.csv',dtype = np.float32,delimiter=',')
 ids = ids_r.reshape(21113, 30)
 distances = distances_r.reshape(21113, 30)
 
