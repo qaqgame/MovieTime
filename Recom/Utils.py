@@ -1,7 +1,7 @@
 
 from Recom.models import CosRelation
 
-def ImportRelation(id1,id2,relation):
+def ImportRelation(id1,id1Origin,id2,id2Origin,relation):
     movId1='Mov'+str(id1)
     movId2='Mov'+str(id2)
 
@@ -10,7 +10,7 @@ def ImportRelation(id1,id2,relation):
         return
 
     #否则添加
-    CosRelation.objects.create(Movie1=movId1,Movie2=movId2,Relation=relation)
+    CosRelation.objects.create(Movie1=movId1,Movie1Origin=id1Origin,Movie2=movId2,Movie2Origin=id2Origin,Relation=relation)
 
 # 获得推荐电影列表：电影id，推荐数目
 def GetRecommList(id,count):
