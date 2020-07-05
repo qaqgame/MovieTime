@@ -23,9 +23,7 @@ def login(request):
             # ret = redirect("/index/")
             request.session['is_login'] = True
             request.session['user1'] = name
-            # path = request.POST.get('next')
-            # path = '/' + path
-            # return redirect(path)
+
             return JsonResponse({"username": name, "result": "success", "reason": "登录成功", "formtype": "login"})
         else:
             return JsonResponse({"password": "false", "result": "failed", "reason": "用户名或密码错误", "formtype": "login"})
