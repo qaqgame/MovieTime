@@ -5,7 +5,7 @@ from django.http import JsonResponse
 import json
 # Create your views here.
 from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes, ParseMovieRegions, GetFilmList, \
-    RegionList
+    RegionList, ToTypeNum
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
 
 def login(request):
@@ -25,14 +25,12 @@ def login(request):
                 request.session.create()
             request.session['is_login'] = True
             request.session['user1'] = name
-<<<<<<< HEAD
-=======
+
             # request.session.save()
             print(request.session['user1'])
             # path = request.POST.get('next')
             # path = '/' + path
             # return redirect(path)
->>>>>>> 350d4155ffd43cbde661ac25eeb8c7d8fb90af8d
             return JsonResponse({"username": name, "result": "success", "reason": "登录成功", "formtype": "login"})
         else:
             return JsonResponse({"password": "false", "result": "failed", "reason": "用户名或密码错误", "formtype": "login"})
@@ -234,6 +232,7 @@ def movInfo(request, mn):
 
     data['movieinfo'] = movieinfo
     res = wrapTheJson("success", '', data=data)
+    models.ViewRecord.objects.create(UserId=uid, TargetId=movInstance.MovId)
     return JsonResponse(res)
 
 
@@ -350,3 +349,19 @@ def getKeep(request, un):
     data['keepmovies'] = timeline
     res = wrapTheJson("success", '', data)
     return JsonResponse(res)
+
+
+def likeType(request):
+    recv_data = json.loads(request.body.decode())  # 解析前端发送的JSON格式的数据
+    types = recv_data['choosen']
+    username = request.session.get("user1", '')
+    if username == '':
+        res = wrapTheJson("failed", "session中没有用户名")
+        return JsonResponse(res)
+    userInstance = GetUser(username)
+    if userInstance:
+        res = wrapTheJson("failed", "没有这个用户")
+        return JsonResponse(res)
+    userInstance.Types = ToTypeNum(types)
+    userInstance.save()
+    return JsonResponse(wrapTheJson("success",''))
