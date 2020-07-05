@@ -3,11 +3,12 @@ from Main.models import *
 from Main import models
 from django.http import JsonResponse
 import json
+import random
 # Create your views here.
 from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes, ParseMovieRegions, GetFilmList, \
-    RegionList, ToTypeNum
+    RegionList, ToTypeNum, wrapTheMovie
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
-
+from Recom.Utils import GetRecommList
 def login(request):
     if request.method == 'GET':
         path = request.GET.get('next', '')
@@ -365,3 +366,124 @@ def likeType(request):
     userInstance.Types = ToTypeNum(types)
     userInstance.save()
     return JsonResponse(wrapTheJson("success",''))
+
+
+def getRec(request):
+    username = request.session.get("user1", '')
+    username = request.session.get("user1", '')
+    if username == '':
+        res = wrapTheJson("failed", "session中没有用户名")
+        return JsonResponse(res)
+    userInstance = GetUser(username)
+    if userInstance:
+        res = wrapTheJson("failed", "没有这个用户")
+        return JsonResponse(res)
+    uid = userInstance.UserId
+    allmovies = []
+    comics = []
+    crimes = []
+    threats = []
+    fictions = []
+    jingsongs = []
+    loves = []
+    actions = []
+    wests = []
+    musics = []
+    disasters = []
+    xijvs = []
+    jvqings = []
+    if userInstance.HasView == True:
+        favRecords = models.FavoriteRecord.objects.filter(UserId=uid).order_by("-RecordTime")
+        movids = []
+        for favRecord in favRecords:
+            movids.append(models.Movie.objects.filter(MovId=favRecord.TargetId)[0].MovId)
+        Recmovies = []
+        if len(movids) < 20:
+            num = 200 / len(movids)
+            for movid in movids:
+                Recmovieids = GetRecommList(movid, num)
+            for recmovieid in Recmovieids:
+                Recmovies.append(GetFilm(recmovieid))
+        else:
+            for i in range(20):
+                Recmovieids = GetRecommList(movids[i], 10)
+            for recmovid in Recmovieids:
+                Recmovies.append(GetFilm(recmovid))
+        Recmovies_wrap = wrapTheMovie(Recmovies)
+        alltypemovies = []
+        for i in range(20):
+            alltypemovies.append(Recmovies_wrap[random.randint(0, len(Recmovies_wrap))])
+        for index, movie in Recmovies:
+            types = ToTypeNum(movie.MovType)
+            if types&(1<<2)!=0:
+                if(len(comics)<=20):
+                    comics.append(Recmovies_wrap[index])
+            if types&(1<<4)!=0 :
+                if(len(crimes)<=20):
+                    crimes.append(Recmovies_wrap[index])
+            if types&(1<<7)!=0:
+                if(len(threats)<=20):
+                    threats.append(Recmovies_wrap[index])
+            if types&(1<<9)!=0:
+                if(len(fictions)<=20):
+                    fictions.append(Recmovies_wrap[index])
+            if types&(1<<10)!=0:
+                if(len(jingsongs)<=20):
+                    jingsongs.append(Recmovies_wrap[index])
+            if types&(1<<11)!=0:
+                if(len(loves)<=20):
+                    loves.append(Recmovies_wrap[index])
+            if types&(1<<15)!=0:
+                if(len(actions)<=20):
+                    actions.append(Recmovies_wrap[index])
+            if types&(1<<18)!=0:
+                if(len(wests)<=20):
+                    wests.append(Recmovies_wrap[index])
+            if types&(1<<12)!=0:
+                if(len(musics)<=20):
+                    musics.append(Recmovies_wrap[index])
+            if types&(1<<23)!=0:
+                if(len(disasters)<=20):
+                    disasters.append(Recmovies_wrap[index])
+            if types&(1<<27)!=0:
+                if(len(xijvs)<=20):
+                    xijvs.append(Recmovies_wrap[index])
+            if types&(1<<29)!=0:
+                if(len(jvqings)<=20):
+                    jvqings.append(Recmovies_wrap[index])
+    else:
+        comics = wrapTheMovie(GetFilmList(1<<2,'','',0, 0, 20))
+        crimes = wrapTheMovie(GetFilmList(1<<4,'','',0, 0, 20))
+        threats = wrapTheMovie(GetFilmList(1<<7,'','',0, 0, 20))
+        fictions = wrapTheMovie(GetFilmList(1<<9,'','',0, 0, 20))
+        jingsongs = wrapTheMovie(GetFilmList(1<<10,'','',0, 0, 20))
+        loves = wrapTheMovie(GetFilmList(1<<11,'','',0, 0, 20))
+        actions = wrapTheMovie(GetFilmList(1<<15,'','',0, 0, 20))
+        wests = wrapTheMovie(GetFilmList(1<18,'','',0, 0, 20))
+        musics = wrapTheMovie(GetFilmList(1<12,'','',0, 0, 20))
+        disasters = wrapTheMovie(GetFilmList(1<<23,'','',0, 0, 20))
+        xijvs = wrapTheMovie(GetFilmList(1<<27,'','',0, 0, 20))
+        jvqings = wrapTheMovie(GetFilmList(1<<29,'','',0, 0, 20))
+        types = ParseMovieTypes(userInstance.Types)
+        for i in range(20):
+            allmovies.append(wrapTheMovie(GetFilmList(1<<int(types[i%len(types)]), '', '', 0, 0 , 1))[0])
+
+    data = {}
+    data['movietypes'] = ['动画', '犯罪', '恐怖', '科幻', '惊悚', '爱情', '动作', '西部', '音乐', '灾难', '喜剧', '剧情']
+    data['alltypemovie'] = allmovies
+    data['动画'] = comics
+    data['犯罪'] = crimes
+    data['恐怖'] = threats
+    data['科幻'] = fictions
+    data['惊悚'] = jingsongs
+    data['爱情'] = loves
+    data['动作'] = actions
+    data['西部'] = wests
+    data['音乐'] = musics
+    data['灾难'] = disasters
+    data['喜剧'] = xijvs
+    data['剧情'] = jvqings
+    res = wrapTheJson("success", '', data=data)
+    return JsonResponse(res)
+
+

@@ -401,3 +401,14 @@ def wrapTheDetail(name, id):
             return "评论了电影 "+ MovName + "\t" + record.ReplyContent
 
 
+def wrapTheMovie(movies):
+    allmovies = []
+    for movie in movies:
+        info = {}
+        info['movieimgurl'] = GetMovImgUrl(movie)
+        info['movieId']=movie.MovId
+        info['moviename'] = movie.MovName
+        # 需要修改
+        info['extrainfo'] = movie.MovScore
+        allmovies.append(info)
+    return allmovies
