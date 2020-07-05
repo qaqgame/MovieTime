@@ -40,7 +40,7 @@ def GetNoOfSex(sex):
     return SexDict[sex]
 
 # 导入电影
-def ImportMovie(title,typeList,length,origin,company,director,content,tagList,actorList,time,imdb,tmdb,language,cover=None):
+def ImportMovie(title,typeList,length,origin,company,director,content,tagList,actorList,time,imdb,tmdb,language,originId,cover=None):
     if typeList:
         # 获取最终的类型
         temp=1
@@ -77,7 +77,7 @@ def ImportMovie(title,typeList,length,origin,company,director,content,tagList,ac
     if movieQuery.exists():
         return
     movieInstance=Movie.objects.create(MovName=title,MovLength=length,MovOrigin=finalRegion,MovType=finalType,MovCompany=company,
-                         MovDirector=directorInstance, MovDescription=content,MovDate=time,MovImdbId=imdb,MovTmdbId=tmdb,MovLanguage=language)
+                         MovDirector=directorInstance, MovDescription=content,MovDate=time,MovImdbId=imdb,MovTmdbId=tmdb,MovOriginId=originId,MovLanguage=language)
 
     # # 处理导演信息
     # tempQuery = ActorConnection.objects.filter(MovId=movieInstance, ActorId=directorInstance)
