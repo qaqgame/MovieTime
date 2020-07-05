@@ -269,14 +269,18 @@ def GetFilmByDate(year):
     return result
 
 # 获取电影列表并排序 startIdx:开始索引 length：获取长度
-def GetFilmList(type,region,year,name,order,startIdx,length):
+def GetFilmList(type,region,name,order,startIdx,length):
     types=type
     regions=region
-    tempDate = datetime.datetime.strptime(str(year), "%Y")
-    realDate = tempDate.date()
-    filmList = Movie.objects.extra(where=['MovType&%d!=0'], params=[types]).extra(where=['MovOrigin&%d!=0'],params=[regions])
-    if year!=-1:
-        filmList=filmList.filter(MovDate=realDate)
+    # tempDate = datetime.datetime.strptime(str(year), "%Y")
+    # realDate = tempDate.date()
+    print(types)
+    filmList = Movie.objects.extra(where=["MovType&%s!=0"], params=[int(types)])
+    print(filmList.count())
+    filmList = filmList.extra(where=["MovOrigin&%s!=0"],params=[int(regions)])
+    print(filmList.exists())
+    # if year!=-1:
+    #     filmList=filmList.filter(MovDate=realDate)
     if name:
         filmList=filmList.filter(MovName__contains=name)
 
@@ -295,10 +299,10 @@ def GetFilmList(type,region,year,name,order,startIdx,length):
     # 名称降序
     elif order==4:
         filmList=filmList.order_by('-MovName')
-
-    if len(filmList)>startIdx+length-1:
-        return filmList[startIdx:startIdx+length-1]
-    return filmList[startIdx:]
+    print(filmList.count())
+    if filmList.count()>int(startIdx)+int(length)-1:
+        return filmList[int(startIdx):int(startIdx)+int(length)-1]
+    return filmList[int(startIdx):]
 
 # 获取电影列表(
 # 根据导演名搜索电影

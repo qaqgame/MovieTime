@@ -265,13 +265,13 @@ def search(request):
     if type==-1:
         typeList=(~(1<<30))
     else:
-        typeList=(1<<type)
+        typeList=(1<<int(type))
     field = request.GET.get('field', -1)
     # 生成区域
     if field==-1:
         regionList=(~(1<<5))
     else:
-        regionList=(1<<field)
+        regionList=(1<<int(field))
     time = request.GET.get('time', -1)
     moviename = request.GET.get('moviename', '')
     startIdx= request.GET.get('start',0)
@@ -284,7 +284,7 @@ def search(request):
     #     conditions['MovDate'] = time
     # if moviename != '':
     #     conditions['MovName'] = moviename
-    movies = GetFilmList(typeList,regionList,time,moviename,0,startIdx,20)
+    movies = GetFilmList(typeList,regionList,moviename,0,startIdx,20)
     if not movies.exists():
         res = wrapTheJson("failed", "没有符合条件的电影")
         return JsonResponse(res)
@@ -296,7 +296,7 @@ def search(request):
         info['movieId']=movie.MovId
         info['moviename'] = movie.MovName
         # 需要修改
-        info['extrainfo'] = movie.MovRate
+        info['extrainfo'] = movie.MovScore
         allmovies.append(info)
     data['allmovies'] = allmovies
     res = wrapTheJson("success", "", data=data)
@@ -313,7 +313,7 @@ def keep(request):
         res = wrapTheJson("failed", "没有该电影名的数据")
         return JsonResponse(res)
     movId = movie[0].MovId
-    uid = GetUser(request.session['user1']).UserId
+    uid = GetUser(request.session['user1']).UserId        # todo:KeyError: 'user1'
     favRecord = models.FavoriteRecord.objects.create(UserId=uid, TargetId=movId)
     res = wrapTheJson("success", '')
     return JsonResponse(res)
