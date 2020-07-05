@@ -28,6 +28,9 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
+
 # Application definition
 
 INSTALLED_APPS = [

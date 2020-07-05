@@ -21,9 +21,18 @@ def login(request):
         if user:
             name = recv_data['name']
             # ret = redirect("/index/")
+            if not request.session.session_key:
+                request.session.create()
             request.session['is_login'] = True
             request.session['user1'] = name
-
+<<<<<<< HEAD
+=======
+            # request.session.save()
+            print(request.session['user1'])
+            # path = request.POST.get('next')
+            # path = '/' + path
+            # return redirect(path)
+>>>>>>> 350d4155ffd43cbde661ac25eeb8c7d8fb90af8d
             return JsonResponse({"username": name, "result": "success", "reason": "登录成功", "formtype": "login"})
         else:
             return JsonResponse({"password": "false", "result": "failed", "reason": "用户名或密码错误", "formtype": "login"})
@@ -105,7 +114,7 @@ def UserSpace(request,un):
             imgPath=str(MovInstance.MovImg)
             fileName=imgPath.split('.')[0]
             if fileName.__contains__('default_cover'):
-                cover='/static/cover/default_cover.bmp'
+                cover='/static/cover/default_cover.png'
             else:
                 ext=imgPath.split('.').pop()
                 movId=MovInstance.MovId
@@ -216,7 +225,7 @@ def movInfo(request, mn):
         ifKeeped = 'false'
     else:
         uid = GetUser(uname)
-        fav = models.FavoriteRecord.objects.filter(UserId=uid, TargetId=movieinfo.MovId);
+        fav = models.FavoriteRecord.objects.filter(UserId=uid, TargetId=movInstance.MovId)
         if not fav:
             ifKeeped = 'false'
         else:
@@ -313,7 +322,8 @@ def keep(request):
         res = wrapTheJson("failed", "没有该电影名的数据")
         return JsonResponse(res)
     movId = movie[0].MovId
-    uid = GetUser(request.session['user1']).UserId        # todo:KeyError: 'user1'
+    uid = GetUser(request.session.get('user1'))
+    print(uid)
     favRecord = models.FavoriteRecord.objects.create(UserId=uid, TargetId=movId)
     res = wrapTheJson("success", '')
     return JsonResponse(res)
