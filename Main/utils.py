@@ -308,7 +308,7 @@ def GetFilmList(type=~(1<<30),region=~(1<<5),name='',order=0,startIdx=0,length=2
         filmList=filmList.order_by('-MovScore')
     print(filmList.count())
     if filmList.count()>int(startIdx)+int(length)-1:
-        return filmList[int(startIdx):int(startIdx)+int(length)-1]
+        return filmList[int(startIdx):int(startIdx)+int(length)]
     return filmList[int(startIdx):]
 
 # 获取电影列表(
