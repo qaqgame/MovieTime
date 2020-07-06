@@ -224,16 +224,15 @@ def movInfo(request, mn):
     uid = GetUser(request.session.get('user1'))
     print(uid.UserId)
     if not uid:
-        ifKeeped = 'false'
+        ifKeeped = False
     else:
         # uid = GetUser(uname)
         fav = models.FavoriteRecord.objects.filter(UserId=uid, TargetId=movInstance.MovId)
         if not fav:
-            ifKeeped = 'false'
+            ifKeeped = False
         else:
-            ifKeeped = 'true'
+            ifKeeped = True
     movieinfo['ifKeeped'] = ifKeeped
-
     data['movieinfo'] = movieinfo
     res = wrapTheJson("success", '', data=data)
     models.ViewRecord.objects.create(UserId=uid, TargetId=movInstance.MovId)
