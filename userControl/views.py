@@ -274,13 +274,13 @@ def ShowMoviePage(request):
 def search(request):
     type = request.GET.get('type', -1)
     # 生成type
-    if type==-1:
+    if int(type)==-1:
         typeList=(~(1<<30))
     else:
         typeList=(1<<int(type))
     field = request.GET.get('field', -1)
     # 生成区域
-    if field==-1:
+    if int(field)   ==-1:
         regionList=(~(1<<5))
     else:
         regionList=(1<<int(field))
@@ -410,92 +410,56 @@ def getRec(request):
         movids = []
         for favRecord in favRecords:
             movids.append(favRecord.TargetId)
-        defaultAllType=~(1<<30)
-        # #收藏电影数小于20时
-        # if len(movids) < 20:
-        #     # 计算每部收藏电影所获取的推荐数
-        #     num = 200 / len(movids)
-        #     for movid in movids:
-        #         Recmovieids = GetRecommList(id=movid, count=num,type=defaultAllType)
-        #     for recmovie in Recmovieids:
-        #         Recmovies.append(recmovie)
-        # else:
-        #     for i in range(20):
-        #         Recmovieids = GetRecommList(movids[i], 10)
-        #     for recmovid in Recmovieids:
-        #         Recmovies.append(GetFilm(recmovid))
-        # Recmovies_wrap = wrapTheMovie(Recmovies)
-        # alltypemovies = []
-        testP1 = GetRecByIds(movids=movids,type=defaultAllType,count=20)
-        print("testP1",testP1.__len__())
-        allmovies.append(wrapTheMovie(GetRecByIds(movids=movids,type=defaultAllType,count=20)))
+        if len(movids)>0:
+            defaultAllType=~(1<<30)
+            testP1 = GetRecByIds(movids=movids,type=defaultAllType,count=20)
+            print("testP1",testP1.__len__())
+            allmovies = (wrapTheMovie(GetRecByIds(movids=movids,type=defaultAllType,count=20)))
 
-        comics.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<2),count=20)))
-        crimes.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<4),count=20)))
-        threats.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<7),count=20)))
-        fictions.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<9),count=20)))
-        jingsongs.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<10),count=20)))
-        loves.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<11),count=20)))
-        actions.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<15),count=20)))
-        wests.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<18),count=20)))
-        musics.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<12),count=20)))
-        disasters.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<23),count=20)))
-        xijvs.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<27),count=20)))
-        jvqings.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<29),count=20)))
-        # for i in range(20):
-        #     alltypemovies.append(Recmovies_wrap[random.randint(0, len(Recmovies_wrap))])
-        # for index, movie in Recmovies:
-        #     types = movie.MovType
-        #     if types&(1<<2)!=0:
-        #         if(len(comics)<=20):
-        #             comics.append(Recmovies_wrap[index])
-        #     if types&(1<<4)!=0 :
-        #         if(len(crimes)<=20):
-        #             crimes.append(Recmovies_wrap[index])
-        #     if types&(1<<7)!=0:
-        #         if(len(threats)<=20):
-        #             threats.append(Recmovies_wrap[index])
-        #     if types&(1<<9)!=0:
-        #         if(len(fictions)<=20):
-        #             fictions.append(Recmovies_wrap[index])
-        #     if types&(1<<10)!=0:
-        #         if(len(jingsongs)<=20):
-        #             jingsongs.append(Recmovies_wrap[index])
-        #     if types&(1<<11)!=0:
-        #         if(len(loves)<=20):
-        #             loves.append(Recmovies_wrap[index])
-        #     if types&(1<<15)!=0:
-        #         if(len(actions)<=20):
-        #             actions.append(Recmovies_wrap[index])
-        #     if types&(1<<18)!=0:
-        #         if(len(wests)<=20):
-        #             wests.append(Recmovies_wrap[index])
-        #     if types&(1<<12)!=0:
-        #         if(len(musics)<=20):
-        #             musics.append(Recmovies_wrap[index])
-        #     if types&(1<<23)!=0:
-        #         if(len(disasters)<=20):
-        #             disasters.append(Recmovies_wrap[index])
-        #     if types&(1<<27)!=0:
-        #         if(len(xijvs)<=20):
-        #             xijvs.append(Recmovies_wrap[index])
-        #     if types&(1<<29)!=0:
-        #         if(len(jvqings)<=20):
-        #             jvqings.append(Recmovies_wrap[index])
-    else:
-        comics = wrapTheMovie(GetRecommByType(1<<2,20))
-        crimes = wrapTheMovie(GetRecommByType(1<<4,20))
-        threats = wrapTheMovie(GetRecommByType(1<<7,20))
-        fictions = wrapTheMovie(GetRecommByType(1<<9,20))
-        jingsongs = wrapTheMovie(GetRecommByType(1<<10,20))
-        loves = wrapTheMovie(GetRecommByType(1<<11,20))
-        actions = wrapTheMovie(GetRecommByType(1<<15,20))
-        wests = wrapTheMovie(GetRecommByType(1<<18,20))
-        musics = wrapTheMovie(GetRecommByType(1<<12,20))
-        disasters = wrapTheMovie(GetRecommByType(1<<23,20))
-        xijvs = wrapTheMovie(GetRecommByType(1<<27,20))
-        jvqings = wrapTheMovie(GetRecommByType(1<<29,20))
-        allmovies.append(wrapTheMovie(GetRecommByType(userInstance.Types,20)))
+            comics = (wrapTheMovie(GetRecByIds(movids=movids,type=(1<<2),count=20)))
+            crimes=(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<4),count=20)))
+            threats=(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<7),count=20)))
+            fictions=(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<9),count=20)))
+            jingsongs=(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<10),count=20)))
+            loves=(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<11),count=20)))
+            actions=(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<15),count=20)))
+            wests=(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<18),count=20)))
+            musics=(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<12),count=20)))
+            disasters=(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<23),count=20)))
+            xijvs=(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<27),count=20)))
+            jvqings=(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<29),count=20)))
+
+            data = {}
+            data['movietypes'] = ['动画', '犯罪', '恐怖', '科幻', '惊悚', '爱情', '动作', '西部', '音乐', '灾难', '喜剧', '剧情']
+            data['alltypemovie'] = allmovies
+            data['动画'] = comics
+            data['犯罪'] = crimes
+            data['恐怖'] = threats
+            data['科幻'] = fictions
+            data['惊悚'] = jingsongs
+            data['爱情'] = loves
+            data['动作'] = actions
+            data['西部'] = wests
+            data['音乐'] = musics
+            data['灾难'] = disasters
+            data['喜剧'] = xijvs
+            data['剧情'] = jvqings
+            res = wrapTheJson("success", '', data=data)
+            return JsonResponse(res)
+
+    comics = wrapTheMovie(GetRecommByType(1<<2,20))
+    crimes = wrapTheMovie(GetRecommByType(1<<4,20))
+    threats = wrapTheMovie(GetRecommByType(1<<7,20))
+    fictions = wrapTheMovie(GetRecommByType(1<<9,20))
+    jingsongs = wrapTheMovie(GetRecommByType(1<<10,20))
+    loves = wrapTheMovie(GetRecommByType(1<<11,20))
+    actions = wrapTheMovie(GetRecommByType(1<<15,20))
+    wests = wrapTheMovie(GetRecommByType(1<<18,20))
+    musics = wrapTheMovie(GetRecommByType(1<<12,20))
+    disasters = wrapTheMovie(GetRecommByType(1<<23,20))
+    xijvs = wrapTheMovie(GetRecommByType(1<<27,20))
+    jvqings = wrapTheMovie(GetRecommByType(1<<29,20))
+    allmovies=(wrapTheMovie(GetRecommByType(userInstance.Types,20)))
 
     data = {}
     data['movietypes'] = ['动画', '犯罪', '恐怖', '科幻', '惊悚', '爱情', '动作', '西部', '音乐', '灾难', '喜剧', '剧情']
