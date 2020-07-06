@@ -6,7 +6,7 @@ import json
 import random
 # Create your views here.
 from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes, ParseMovieRegions, GetFilmList, \
-    RegionList, ToTypeNum, wrapTheMovie
+    RegionList, ToTypeNum, wrapTheMovie, GetReplies
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
 from Recom.Utils import GetRecommList, GetRecommByType
 
@@ -379,6 +379,28 @@ def GetRecByIds(movids,type,count):
         Recmovies.append(GetFilm(recmovie))
     return Recmovies
 
+#获取评论
+def GetReply(request):
+    movName=request.GET.get('movname','')
+    movId=request.GET.get('movid','')
+    if movId=='':
+        movInss=Movie.objects.filter(MovName=movName)
+        if not movInss.exists():
+            res=wrapTheJson('failed','无法找到该电影')
+            return JsonResponse(res)
+        movIns=movInss[0]
+        movId=movIns.MovId
+    try:
+        result=GetReplies(movId)
+    except Exception as e:
+        res=wrapTheJson('failed',e.__str__())
+        return JsonResponse(res)
+    finally:
+        data={}
+        data['replylist']=result
+        res=wrapTheJson('success','',data)
+        return JsonResponse(res)
+
 def getRec(request):
     username = request.session.get("user1", '')
     print(username)
@@ -495,7 +517,7 @@ def getRec(request):
         disasters = wrapTheMovie(GetRecommByType(1<<23,20))
         xijvs = wrapTheMovie(GetRecommByType(1<<27,20))
         jvqings = wrapTheMovie(GetRecommByType(1<<29,20))
-        allmovies.append(wrapTheMovie(GetRecommByType(userInstance.Types,20)))
+        allmovies=wrapTheMovie(GetRecommByType(userInstance.Types,20))
 
     data = {}
     data['movietypes'] = ['动画', '犯罪', '恐怖', '科幻', '惊悚', '爱情', '动作', '西部', '音乐', '灾难', '喜剧', '剧情']
