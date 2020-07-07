@@ -6,7 +6,7 @@ import json
 import random
 # Create your views here.
 from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes, ParseMovieRegions, GetFilmList, \
-    RegionList, ToTypeNum, wrapTheMovie, GetReplies, CreateAgree
+    RegionList, ToTypeNum, wrapTheMovie, GetReplies, CreateAgree, CancelAgree
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
 from Recom.Utils import GetRecommList, GetRecommByType
 
@@ -313,6 +313,7 @@ def search(request):
     res = wrapTheJson("success", "", data=data)
     return JsonResponse(res)
 
+# 点赞
 def agree(request):
     target=request.GET.get('target','')
     movName = request.GET.get('movname', '')
@@ -369,6 +370,61 @@ def agree(request):
         res=wrapTheJson('success','',data)
         return JsonResponse(res)
 
+#取消点赞
+def cancelAgree(request):
+    target = request.GET.get('target', '')
+    movName = request.GET.get('movname', '')
+    movId = request.GET.get('movid', '')
+    if movId == '' and movName != '':
+        movInss = Movie.objects.filter(MovName=movName)
+        if not movInss.exists():
+            res = wrapTheJson('failed', '无法找到该电影')
+            return JsonResponse(res)
+        movIns = movInss[0]
+        movId = movIns.MovId
+    elif movId == '' and movName == '':
+        movId = None
+
+    # 获取点赞目标类型,构造targetid
+    tempType = request.GET.get('type', 'Reply')
+    if tempType == 'Reply':
+        agreeType = 1
+        targetId = target
+    # 如果是标签
+    else:
+        agreeType = 2
+        tag = MovieTag.objects.filter(MovTagCnt=target)
+        if not tag.exists():
+            res = wrapTheJson('failed', '无法找到该标签')
+            return JsonResponse(res)
+        tagId = tag
+        targetId = tagId
+
+    username = request.GET.get('username', '')
+    uid = request.GET.get('uid', '')
+    if uid == '':
+        userInss = User.objects.filter(UserName=username)
+        if not userInss.exists():
+            res = wrapTheJson('failed', '无法找到该用户')
+            return JsonResponse(res)
+        userIns = userInss[0]
+    else:
+        userInss = User.objects.filter(UserId=uid)
+        if not userInss.exists():
+            res = wrapTheJson('failed', '无法找到该用户')
+            return JsonResponse(res)
+        userIns = userInss[0]
+
+    try:
+        result=CancelAgree(userIns,targetId,agreeType,movId)
+    except Exception as e:
+        res=wrapTheJson('failed',e.__str__())
+        return JsonResponse(res)
+    finally:
+        data={}
+        data['agreecount']=result
+        res=wrapTheJson('success','',data)
+        return JsonResponse(res)
 
 
 def keep(request):

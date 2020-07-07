@@ -484,6 +484,7 @@ def CreateAgree(userInstance,targetId,agreeType,movId=None):
 
 # 取消点赞
 def CancelAgree(userInstance,targetId,agreeType,movId=None):
+    tempTarget=targetId
     # 如果点赞的是标签，则转换targetid
     if agreeType==2 :
         if not movId:
@@ -493,3 +494,13 @@ def CancelAgree(userInstance,targetId,agreeType,movId=None):
     if not agreeInstance.exists():
         raise Exception('找不到该点赞信息')
     agreeInstance.delete()
+    if agreeType==1:
+        replies=ReplyRecord.objects.filter(RecordId=targetId)
+        if not replies.exists():
+            raise Exception('未找到该评论:'+targetId)
+        return replies[0].AgreeCount
+    else:
+        tags=MovTagConnection.objects.filter(MovId=movId,MovTagId=tempTarget)
+        if not tags.exists():
+            raise Exception('未找到该电影下的标签：'+movId+','+tempTarget)
+        return tags[0].AgreeCount
