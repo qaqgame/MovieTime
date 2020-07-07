@@ -455,6 +455,7 @@ def GetReply(request):
         return JsonResponse(res)
     finally:
         data={}
+        data['count']=len(result)
         if len(result)<=startIdx+count:
             data['replylist']=result
         else:
@@ -584,6 +585,7 @@ def createReply(request):
         reply=models.ReplyRecord.objects.create(UserId=userInstance, TargetId=movid, ReplyType=1, ReplyGrade=grade, ReplyContent=content)
         # reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=movid, ReplyType=1, ReplyGrade=grade, ReplyContent=content).order_by("-RecordTime")[0]
 
+        result=GetReplies(movid)
         print(reply)
         data = {}
         data['name'] = username
@@ -593,11 +595,15 @@ def createReply(request):
         data['time'] = reply.RecordTime
         data['replyid'] = reply.RecordId
         data['reply'] = []
+        data['count']=len(result)
         res = wrapTheJson('success', '', data)
     else:
         print(type)
         replyid = recv_data['replyid']
+        moviename=recv_data['moviename']
+        movid = models.Movie.objects.filter(MovName=moviename)[0].MovId
         reply=models.ReplyRecord.objects.create(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content)
+        result=GetReplies(movid)
         #reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content).order_by("-RecordTime")[0]
         print(reply)
         data = {}
@@ -607,5 +613,6 @@ def createReply(request):
         data['time'] = reply.RecordTime
         data['replyid'] = reply.RecordId
         data['reply'] = []
+        data['count']=len(result)
         res = wrapTheJson('success', '', data)
     return JsonResponse(res)
