@@ -420,7 +420,7 @@ def wrapTheMovie(movies):
         allmovies.append(info)
     return allmovies
 
-def GetWrappedReply(replyInstance):
+def GetWrappedReply(replyInstance,userIns):
     temp = {}
     # 如果存在该用户，则查询用户名
     if replyInstance.UserId:
@@ -440,6 +440,13 @@ def GetWrappedReply(replyInstance):
         temp['score'] = 0
     # 评论时间
     temp['time'] = replyInstance.RecordTime
+
+    # 查询是否点赞
+    tempAg=Agree.objects.filter(TargetId=replyInstance.RecordId,UserId=userIns.UserId)
+    if tempAg.exists():
+        temp['agreed']=True
+    else:
+        temp['agreed']=False
     # 评论的回复
     reply2this = ReplyRecord.objects.filter(TargetId=replyInstance.RecordId)
     tempList = []
@@ -447,19 +454,19 @@ def GetWrappedReply(replyInstance):
     if reply2this.exists():
         for tarRep in reply2this:
             # 则获取包装后的评论
-            tempTarget = GetWrappedReply(tarRep)
+            tempTarget = GetWrappedReply(tarRep,userIns)
             tempList.append(tempTarget)
     temp['reply']=tempList
     return temp
 
 # 获取包装后的评论列表
-def GetReplies(movId):
+def GetReplies(movId,userIns):
     # 找到该电影的所有评论
     replies=ReplyRecord.objects.filter(TargetId=movId)
     result=[]
     for r in replies:
         #获取该评论
-        temp=GetWrappedReply(r)
+        temp=GetWrappedReply(r,userIns)
         result.append(temp)
     return result
 

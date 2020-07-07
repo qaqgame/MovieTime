@@ -41,7 +41,7 @@ def login(request):
 
 def logout(request):
     request.session.flush()
-    return redirect('/login/')
+    return JsonResponse({'result': 'success', 'reason': '','data':{'target':'/'}})
 
 
 def index(request):
@@ -50,6 +50,18 @@ def index(request):
         return JsonResponse({'hasSes': 'false', 'next': '/ses_index/'})
     else:
         return render(request, 's_index.html')
+
+
+def getUser(request):
+    status = request.session.get('is_login')
+    if not status:
+        return JsonResponse({'result':'failed','reason':'','data':{'user': '前往登录', 'link': '/'}})
+    else:
+        username = request.session.get('user1')
+        if not username:
+            return JsonResponse({'result':'failed','reason':'','data':{'user': '前往登录', 'link': '/'}})
+        else:
+            return JsonResponse({'result':'success','reason':'','data':{'user': username, 'link': '/user/'+username}})
 
 
 def signup(request):
@@ -343,24 +355,15 @@ def agree(request):
         tagId=tag
         targetId=tagId
 
-
-    username=request.GET.get('username','')
-    uid=request.GET.get('uid','')
-    if uid=='':
-        userInss=User.objects.filter(UserName=username)
-        if not userInss.exists():
-            res = wrapTheJson('failed', '无法找到该用户')
-            return JsonResponse(res)
-        userIns=userInss[0]
-    else:
-        userInss = User.objects.filter(UserId=uid)
-        if not userInss.exists():
-            res = wrapTheJson('failed', '无法找到该用户')
-            return JsonResponse(res)
-        userIns = userInss[0]
+    # 获取用户
+    username = request.session.get('user1', '')
+    userInstance = GetUser(username)
+    if not userInstance:
+        res = wrapTheJson('failed', '无法找到该用户')
+        return JsonResponse(res)
 
     try:
-        result=CreateAgree(userIns,targetId,agreeType,movId)
+        result=CreateAgree(userInstance,targetId,agreeType,movId)
     except Exception as e:
         res=wrapTheJson('failed',e.__str__())
         return JsonResponse(res)
@@ -400,23 +403,15 @@ def cancelAgree(request):
         tagId = tag
         targetId = tagId
 
-    username = request.GET.get('username', '')
-    uid = request.GET.get('uid', '')
-    if uid == '':
-        userInss = User.objects.filter(UserName=username)
-        if not userInss.exists():
-            res = wrapTheJson('failed', '无法找到该用户')
-            return JsonResponse(res)
-        userIns = userInss[0]
-    else:
-        userInss = User.objects.filter(UserId=uid)
-        if not userInss.exists():
-            res = wrapTheJson('failed', '无法找到该用户')
-            return JsonResponse(res)
-        userIns = userInss[0]
+    # 获取用户
+    username = request.session.get('user1', '')
+    userInstance = GetUser(username)
+    if not userInstance:
+        res = wrapTheJson('failed', '无法找到该用户')
+        return JsonResponse(res)
 
     try:
-        result=CancelAgree(userIns,targetId,agreeType,movId)
+        result=CancelAgree(userInstance,targetId,agreeType,movId)
     except Exception as e:
         res=wrapTheJson('failed',e.__str__())
         return JsonResponse(res)
@@ -497,6 +492,9 @@ def GetReply(request):
     movId=request.GET.get('movid','')
     startIdx=int(request.GET.get('start',0))
     count=int(request.GET.get('count',20))
+
+    username = request.session.get('user1', '')
+    userInstance = GetUser(username)
     if movId=='':
         movInss=Movie.objects.filter(MovName=movName)
         if not movInss.exists():
@@ -505,7 +503,7 @@ def GetReply(request):
         movIns=movInss[0]
         movId=movIns.MovId
     try:
-        result=GetReplies(movId)
+        result=GetReplies(movId,userInstance)
     except Exception as e:
         res=wrapTheJson('failed',e.__str__())
         return JsonResponse(res)
@@ -641,7 +639,7 @@ def createReply(request):
         reply=models.ReplyRecord.objects.create(UserId=userInstance, TargetId=movid, ReplyType=1, ReplyGrade=grade, ReplyContent=content)
         # reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=movid, ReplyType=1, ReplyGrade=grade, ReplyContent=content).order_by("-RecordTime")[0]
 
-        result=GetReplies(movid)
+        result=GetReplies(movid,userInstance)
         print(reply)
         data = {}
         data['name'] = username
@@ -659,7 +657,6 @@ def createReply(request):
         moviename=recv_data['moviename']
         movid = models.Movie.objects.filter(MovName=moviename)[0].MovId
         reply=models.ReplyRecord.objects.create(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content)
-        result=GetReplies(movid)
         #reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content).order_by("-RecordTime")[0]
         print(reply)
         data = {}
@@ -669,6 +666,6 @@ def createReply(request):
         data['time'] = reply.RecordTime
         data['replyid'] = reply.RecordId
         data['reply'] = []
-        data['count']=len(result)
+        data['count']=0
         res = wrapTheJson('success', '', data)
     return JsonResponse(res)
