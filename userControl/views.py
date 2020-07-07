@@ -513,13 +513,14 @@ def createReply(request):
         grade = recv_data['grade']
         moviename = recv_data['moviename']
         movid = models.Movie.objects.filter(MovName=moviename)[0].MovId
-        models.ReplyRecord.objects.create(UserId=userInstance, TargetId=movid, ReplyType=1, ReplyGrade=grade, ReplyContent=content)
-        reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=movid, ReplyType=1, ReplyGrade=grade, ReplyContent=content).order_by("-RecordTime")[0]
+        reply=models.ReplyRecord.objects.create(UserId=userInstance, TargetId=movid, ReplyType=1, ReplyGrade=grade, ReplyContent=content)
+        # reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=movid, ReplyType=1, ReplyGrade=grade, ReplyContent=content).order_by("-RecordTime")[0]
 
         print(reply)
         data = {}
         data['name'] = username
         data['content'] = content
+        data['agree']=reply.AgreeCount
         data['score'] = grade
         data['time'] = reply.RecordTime
         data['replyid'] = reply.RecordId
@@ -528,12 +529,13 @@ def createReply(request):
     else:
         print(type)
         replyid = recv_data['replyid']
-        models.ReplyRecord.objects.create(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content)
-        reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content).order_by("-RecordTime")[0]
+        reply=models.ReplyRecord.objects.create(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content)
+        #reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content).order_by("-RecordTime")[0]
         print(reply)
         data = {}
         data['name'] = username
         data['content'] = content
+        data['agree']=reply.AgreeCount
         data['time'] = reply.RecordTime
         data['replyid'] = reply.RecordId
         data['reply'] = []

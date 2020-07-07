@@ -170,7 +170,7 @@ class UserManager(models.Manager):
         instance.save()
         uId = 'Uid' + str(cnt)
         kwargs['UserId']=uId
-        super(UserManager, self).create(*args, **kwargs)
+        return super(UserManager, self).create(*args, **kwargs)
 # 用户
 class User(models.Model):
     # 用户id
@@ -234,7 +234,7 @@ class ViewManager(models.Manager):
         instance.save()
         uId = 'View' + str(cnt)
         kwargs['RecordId']=uId
-        super(ViewManager, self).create(*args, **kwargs)
+        return super(ViewManager, self).create(*args, **kwargs)
 
 #浏览数据
 class ViewRecord(BaseRecord):
@@ -256,7 +256,7 @@ class AgreeManager(models.Manager):
         instance.save()
         aId = 'Ag' + str(cnt)
         kwargs['RecordId']=aId
-        super(AgreeManager, self).create(*args, **kwargs)
+        return super(AgreeManager, self).create(*args, **kwargs)
 
 #点赞数据
 class Agree(BaseRecord):
@@ -282,7 +282,7 @@ class EditManager(models.Manager):
         instance.save()
         eId = 'Edit' + str(cnt)
         kwargs['RecordId']=eId
-        super(EditManager, self).create(*args, **kwargs)
+        return super(EditManager, self).create(*args, **kwargs)
 # 编辑记录
 class EditRecord(BaseRecord):
     # 编辑类型
@@ -311,7 +311,7 @@ class FavManager(models.Manager):
         instance.save()
         fId = 'Fav' + str(cnt)
         kwargs['RecordId']=fId
-        super(FavManager, self).create(*args, **kwargs)
+        return super(FavManager, self).create(*args, **kwargs)
 # 收藏记录
 class FavoriteRecord(BaseRecord):
     # 收藏类型
@@ -335,7 +335,8 @@ class ReplyManager(models.Manager):
         instance.save()
         rId = 'Rep' + str(cnt)
         kwargs['RecordId']=rId
-        super(ReplyManager, self).create(*args, **kwargs)
+        return super(ReplyManager, self).create(*args, **kwargs)
+
 # 评论记录
 class ReplyRecord(BaseRecord):
     # 回复目标的类型

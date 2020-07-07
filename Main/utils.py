@@ -429,6 +429,8 @@ def GetWrappedReply(replyInstance):
         temp['name'] = '用户已注销'
     # 评论内容
     temp['content'] = replyInstance.ReplyContent
+    # 评论id
+    temp['replyid']=replyInstance.RecordId
     # 评论点赞数
     temp['agree'] = replyInstance.AgreeCount
     # 如果是对电影的评论
