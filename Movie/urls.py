@@ -26,6 +26,7 @@ from userControl.views import getKeep
 from userControl.views import search
 from userControl.views import index
 from userControl.views import createReply
+from userControl.views import GetReply
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -41,5 +42,6 @@ urlpatterns = [
     re_path(r'user/(\w+)/keep', getKeep),
     path('index/',index),
     path('recom/',getRec),
-    path('createreply/',createReply)
+    path('createreply/',createReply),
+    path('getreply',GetReply)
 ]

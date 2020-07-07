@@ -212,7 +212,7 @@ class BaseRecord(models.Model):
     # 记录目标
     TargetId=models.CharField(max_length=50, verbose_name='目标id')
     # 记录时间
-    RecordTime=models.DateTimeField(auto_now_add=True)
+    RecordTime=models.DateTimeField(auto_now_add=True,editable=True)
 
     class Meta:
         abstract=True
