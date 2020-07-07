@@ -11,5 +11,8 @@ admin.site.register(IDCount)
 admin.site.register(MovTagConnection)
 admin.site.register(ActorConnection)
 admin.site.register(FavoriteRecord)
-admin.site.register(ViewRecord)
+
+class YourAdmin(admin.ModelAdmin):
+    readonly_fields = ('RecordTime',)
+admin.site.register(ViewRecord, YourAdmin)
 admin.site.register(CosRelation)
