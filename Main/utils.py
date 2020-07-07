@@ -462,3 +462,34 @@ def GetReplies(movId):
         temp=GetWrappedReply(r)
         result.append(temp)
     return result
+
+#进行点赞
+# 用户实例，目标id，点赞类型
+def CreateAgree(userInstance,targetId,agreeType,movId=None):
+    #如果点赞的是评论
+    if agreeType==1:
+        Agree.objects.create(UserId=userInstance,TargetId=targetId,AgreeType=1)
+        reply=ReplyRecord.objects.filter(RecordId=targetId)
+        if not reply.exists():
+            raise Exception('找不到该评论:'+targetId)
+        return reply[0].AgreeCount
+    if agreeType==2 and movId!=None:
+        realTarget=targetId+'#'+movId
+        Agree.objects.create(UserId=userInstance,TargetId=realTarget,AgreeType=2)
+        movtagConn=MovTagConnection.objects.filter(MovId=movId,MovTagId=targetId)
+        if not movtagConn.exists():
+            raise Exception('找不到该标签:'+targetId+'#'+movId)
+        return movtagConn[0].AgreeCount
+    raise Exception('点赞格式不正确!'+agreeType+','+targetId)
+
+# 取消点赞
+def CancelAgree(userInstance,targetId,agreeType,movId=None):
+    # 如果点赞的是标签，则转换targetid
+    if agreeType==2 :
+        if not movId:
+            raise Exception('未找到该标签下的电影')
+        targetId=targetId+'#'+movId
+    agreeInstance=Agree.objects.filter(UserId=userInstance,TargetId=targetId)
+    if not agreeInstance.exists():
+        raise Exception('找不到该点赞信息')
+    agreeInstance.delete()

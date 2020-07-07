@@ -415,6 +415,16 @@ def Pre_Save_RepRcd_Handler(sender,instance,**kwargs):
 @receiver(pre_delete,sender=MovieTag)
 def Pre_Delete_MovieTag_Handler(sender,instance,**kwargs):
     MovTagConnection.objects.filter(MovTagId=instance.MovTagId).delete()
+    # 删除相应的点赞信息
+    Agree.objects.filter(TargetId__contains=instance.MovTagId).delete()
+
+#处理电影删除情况
+@receiver(pre_delete,sender=Movie)
+def Pre_Delete_Movie_Handler(sender,instance,**kwargs):
+    #删除相应的点赞信息以及标签联系
+    MovTagConnection.objects.filter(MovId=instance.MovTagId).delete()
+    # 删除相应的点赞信息
+    Agree.objects.filter(TargetId__contains=instance.MovTagId).delete()
 
 # 处理浏览记录创建
 @receiver(pre_save,sender=ViewRecord)
