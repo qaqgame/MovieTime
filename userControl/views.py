@@ -439,8 +439,8 @@ def GetRecByIds(movids,type,count):
 def GetReply(request):
     movName=request.GET.get('movname','')
     movId=request.GET.get('movid','')
-    startIdx=request.GET.get('start',0)
-    count=request.GET.get('count',20)
+    startIdx=int(request.GET.get('start',0))
+    count=int(request.GET.get('count',20))
     if movId=='':
         movInss=Movie.objects.filter(MovName=movName)
         if not movInss.exists():
@@ -456,7 +456,7 @@ def GetReply(request):
     finally:
         data={}
         if len(result)<=startIdx+count:
-            data['replylist']=result
+            data['replylist'] = result[startIdx:]
         else:
             data['replylist']=result[startIdx:startIdx+count]
         res=wrapTheJson('success','',data)
