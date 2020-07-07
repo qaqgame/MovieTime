@@ -25,6 +25,7 @@ from userControl.views import movInfo
 from userControl.views import getKeep
 from userControl.views import search
 from userControl.views import index
+from userControl.views import createReply
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -39,5 +40,6 @@ urlpatterns = [
     re_path(r'^movie/(\w+)$', movInfo),
     re_path(r'user/(\w+)/keep', getKeep),
     path('index/',index),
-    path('recom/',getRec)
+    path('recom/',getRec),
+    path('createreply/',createReply)
 ]

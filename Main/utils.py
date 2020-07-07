@@ -419,3 +419,44 @@ def wrapTheMovie(movies):
         info['extrainfo'] = movie.MovScore
         allmovies.append(info)
     return allmovies
+
+def GetWrappedReply(replyInstance):
+    temp = {}
+    # 如果存在该用户，则查询用户名
+    if replyInstance.UserId:
+        temp['name'] = replyInstance.UserId.UserName
+    else:
+        temp['name'] = '用户已注销'
+    # 评论内容
+    temp['content'] = replyInstance.ReplyContent
+    # 评论点赞数
+    temp['agree'] = replyInstance.AgreeCount
+    # 如果是对电影的评论
+    if replyInstance.ReplyType == 1:
+        temp['score'] = replyInstance.ReplyGrade
+    else:
+        temp['score'] = 0
+    # 评论时间
+    temp['time'] = replyInstance.RecordTime
+    # 评论的回复
+    reply2this = ReplyRecord.objects.filter(TargetId=replyInstance.RecordId)
+    tempList = []
+    # 如果存在回复
+    if reply2this.exists():
+        for tarRep in reply2this:
+            # 则获取包装后的评论
+            tempTarget = GetWrappedReply(tarRep)
+            tempList.append(tempTarget)
+    temp['reply']=tempList
+    return temp
+
+# 获取包装后的评论列表
+def GetReplies(movId):
+    # 找到该电影的所有评论
+    replies=ReplyRecord.objects.filter(TargetId=movId)
+    result=[]
+    for r in replies:
+        #获取该评论
+        temp=GetWrappedReply(r)
+        result.append(temp)
+    return result

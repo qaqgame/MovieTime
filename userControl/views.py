@@ -6,7 +6,7 @@ import json
 import random
 # Create your views here.
 from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes, ParseMovieRegions, GetFilmList, \
-    RegionList, ToTypeNum, wrapTheMovie
+    RegionList, ToTypeNum, wrapTheMovie, GetReplies
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
 from Recom.Utils import GetRecommList, GetRecommByType
 
@@ -343,8 +343,8 @@ def getKeep(request, un):
         message = {}
         favId = favMovie.TargetId
         movie = models.Movie.objects.filter(MovId=favId)[0]
-        if not movie.exists():
-            continue
+        # if not movie:
+        #     continue
         message['movieimgurl'] = GetMovImgUrl(movie)
         message['moviename'] = movie.MovName
         message['extrainfo'] = favMovie.RecordTime
@@ -377,6 +377,28 @@ def GetRecByIds(movids,type,count):
     for recmovie in Recmovieids:
         Recmovies.append(GetFilm(recmovie))
     return Recmovies
+
+#获取评论
+def GetReply(request):
+    movName=request.GET.get('movname','')
+    movId=request.GET.get('movid','')
+    if movId=='':
+        movInss=Movie.objects.filter(MovName=movName)
+        if not movInss.exists():
+            res=wrapTheJson('failed','无法找到该电影')
+            return JsonResponse(res)
+        movIns=movInss[0]
+        movId=movIns.MovId
+    try:
+        result=GetReplies(movId)
+    except Exception as e:
+        res=wrapTheJson('failed',e.__str__())
+        return JsonResponse(res)
+    finally:
+        data={}
+        data['replylist']=result
+        res=wrapTheJson('success','',data)
+        return JsonResponse(res)
 
 def getRec(request):
     username = request.session.get("user1", '')
@@ -479,3 +501,41 @@ def getRec(request):
     return JsonResponse(res)
 
 
+# 创建评论
+def createReply(request):
+    recv_data = json.loads(request.body.decode())  # 解析前端发送的JSON格式的数据
+    type = recv_data['type']
+    content = recv_data['content']
+    username = request.session.get('user1', '')
+    userInstance = GetUser(username)
+    uid = userInstance.UserId
+    if(recv_data['type'] == "movie"):
+        grade = recv_data['grade']
+        moviename = recv_data['moviename']
+        movid = models.Movie.objects.filter(MovName=moviename)[0].MovId
+        models.ReplyRecord.objects.create(UserId=userInstance, TargetId=movid, ReplyType=1, ReplyGrade=grade, ReplyContent=content)
+        reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=movid, ReplyType=1, ReplyGrade=grade, ReplyContent=content).order_by("-RecordTime")[0]
+
+        print(reply)
+        data = {}
+        data['name'] = username
+        data['content'] = content
+        data['score'] = grade
+        data['time'] = reply.RecordTime
+        data['replyid'] = reply.RecordId
+        data['reply'] = []
+        res = wrapTheJson('success', '', data)
+    else:
+        print(type)
+        replyid = recv_data['replyid']
+        models.ReplyRecord.objects.create(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content)
+        reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content).order_by("-RecordTime")[0]
+        print(reply)
+        data = {}
+        data['name'] = username
+        data['content'] = content
+        data['time'] = reply.RecordTime
+        data['replyid'] = reply.RecordId
+        data['reply'] = []
+        res = wrapTheJson('success', '', data)
+    return JsonResponse(res)
