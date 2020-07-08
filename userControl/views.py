@@ -331,6 +331,7 @@ def AddTag(request):
         conn=MovTagConnection.objects.create(MovTagId=instance,MovId=movIns)
     else:
         res=wrapTheJson('failed','标签已存在')
+        return JsonResponse(res)
     data={}
     data['tagcontent']=instance.MovTagCnt
     data['agree']=conn.AgreeCount
