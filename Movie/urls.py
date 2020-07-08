@@ -31,6 +31,7 @@ from userControl.views import agree
 from userControl.views import cancelAgree
 from userControl.views import getUser
 from userControl.views import logout
+from userControl.views import likeType
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -51,5 +52,6 @@ urlpatterns = [
     path('agree',agree),
     path('cancelagree',cancelAgree),
     path('loginVerify/',getUser),
-    path('logout/',logout)
+    path('logout/',logout),
+    path('liketype/',likeType)
 ]

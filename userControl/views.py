@@ -102,7 +102,7 @@ def UserSpace(request,un):
         userlv=userInstance.UserLevel
         usercur=userInstance.UserCurExp
         usermax=userInstance.UserMaxExp
-        newUser=userInstance.HasView
+        newUser=not userInstance.HasView
         userData={'username':username,'currlevel':userlv,'currexp':usercur,'maxexp':usermax,"newuser":newUser}
 
         # 查询该收藏
@@ -278,7 +278,7 @@ def timeLine(request, un):
 
             # 如果是评论，则查询他人对自己的评论及点赞
             if sub.__name__ == 'ReplyRecord':
-                reply = ReplyRecord.objects.filter(RecordId=id)[0]
+                reply = ReplyRecord.objects.filter(RecordId=message.RecordId)[0]
                 targetMsg = ReplyRecord.objects.filter(TargetId=message.RecordId)
                 if not targetMsg.exists():
                     continue
@@ -298,6 +298,7 @@ def timeLine(request, un):
                     tempag['actiontime']=ta.RecordTime
                     tempag['title']=GetTitle('Agree')
                     tempag['detail']=ta.UserId.UserName+' 点赞了你的评论('+reply.ReplyContent+')'
+                    timelines.append(tempag)
 
     timelines.sort(key=lambda w:w["actiontime"])
     data = {}
@@ -500,14 +501,16 @@ def likeType(request):
     recv_data = json.loads(request.body.decode())  # 解析前端发送的JSON格式的数据
     types = recv_data['choosen']
     username = request.session.get("user1", '')
+    print("session: ",username)
     if username == '':
         res = wrapTheJson("failed", "session中没有用户名")
         return JsonResponse(res)
     userInstance = GetUser(username)
-    if userInstance:
+    if not userInstance:
         res = wrapTheJson("failed", "没有这个用户")
         return JsonResponse(res)
     userInstance.Types = ToTypeNum(types)
+    userInstance.HasView = True
     userInstance.save()
     return JsonResponse(wrapTheJson("success",''))
 
