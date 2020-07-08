@@ -47,7 +47,7 @@ def GetRecommList(ids,count,type):
         num = int(count / len(ids)) + 1
         final = []
         for mid in ids:
-            mov = Movie.objects.filter(MovId=mid)
+            mov = Movie.objects.filter(MovId=mid)[0]
 
             realId = mov.MovOriginId
             tempRelation = CosRelation.objects.filter(Movie1Origin=realId)
