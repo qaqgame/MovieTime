@@ -38,13 +38,13 @@ def GetRecommList(ids,count,type):
         for mid in ids:
             tempRelation=CosRelation.objects.filter(Movie1=mid)
             if tempRelation.exists():
-                mov=Movie.objects.filter(MovId=mid)
+                mov=Movie.objects.filter(MovId=mid)[0]
                 firstQueue.append(mov)
     else:
         tempRelation = CosRelation.objects.filter(Movie1=ids)
         if not tempRelation.exists():
             return None
-        mov = Movie.objects.filter(MovId=ids)
+        mov = Movie.objects.filter(MovId=ids)[0]
         firstQueue.append(mov)
     #
     # #获取原电影数目
