@@ -436,7 +436,7 @@ def wrapTag(tags):
         temp={}
         temp['tagid']=tag.MovTagId.MovTagId
         temp['tagcontent']=tag.MovTagId.MovTagCnt
-        temp['agree']=tag.MovTagId.AgreeCount
+        temp['agree']=tag.AgreeCount
         result.append(temp)
     return result
 

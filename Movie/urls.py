@@ -32,6 +32,7 @@ from userControl.views import cancelAgree
 from userControl.views import getUser
 from userControl.views import logout
 from userControl.views import likeType
+from userControl.views import getUserReply
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -45,6 +46,7 @@ urlpatterns = [
     re_path(r'^user/(\w+)/historyrecord$', ViewRecord),
     re_path(r'^movie/(\w+)$', movInfo),
     re_path(r'user/(\w+)/keep', getKeep),
+    re_path(r'user/(\w+)/comment', getUserReply),
     path('index/',index),
     path('recom/',getRec),
     path('createreply/',createReply),
