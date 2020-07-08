@@ -654,8 +654,10 @@ def getWrappedRecommand(ids,type,count):
     if not result:
         result=wrapTheMovie(GetRecommByType(type,count))
     if len(result)<count:
-        rest=count*len(result)
-        result.append(wrapTheMovie(GetRecommByType(type,rest)))
+        rest=count-len(result)
+        temp=wrapTheMovie(GetRecommByType(type,rest))
+        for t in temp:
+            result.append(t)
     return result
 
 def getRec(request):
