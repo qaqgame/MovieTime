@@ -206,6 +206,8 @@ def GetRecommByType(type,count,user):
     while len(result)<count:
         print("get rec by type from:"+str(cnt))
         tempList = list(GetFilmList(type=type, order=5, startIdx=int(cnt),length=count))
+        if not tempList:
+            break
         random.shuffle(tempList)
         for mov in tempList:
             #检索不在收藏中的电影
