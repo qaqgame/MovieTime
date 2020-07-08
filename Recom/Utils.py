@@ -101,6 +101,7 @@ def GetRecommList(ids,count,type):
                 realMov=realMovs[0]
                 # 计算权重
                 power = float(parentPower) / 2
+
                 # 如果类型满足
                 if realMov.MovType&int(type)!=0:
                     # 如果满足类型，则加入二级列表
@@ -143,14 +144,14 @@ def GetRecommList(ids,count,type):
         # 排序一级列表
         firstQueue.sort(key=lambda w:w['power']*w['score'],reverse=True)
         for i in range(restNum):
-            if firstQueue[i]['item'].MovType&int(type)!=0 and firstQueue[i]['item'].MovScore>0:
+            if firstQueue[i]['item'].MovType&int(type)!=0 and firstQueue[i]['item'].MovScore>0 and (firstQueue[i]['item'].MovId not in ids):
                 result.append(firstQueue[i]['item'].MovId)
     #如果不存在
     else:
         # 排序一级列表
         firstQueue.sort(key=lambda w: w['power'] * w['score'], reverse=True)
         for i in firstQueue:
-            if i['item'].MovType&int(type)!=0 and i['item'].MovScore>0:
+            if i['item'].MovType&int(type)!=0 and i['item'].MovScore>0 and(i['item'].MovId not in ids):
                 result.append(i['item'].MovId)
     return result
 
@@ -199,7 +200,8 @@ def GetRecommList(ids,count,type):
 def GetRecommByType(type,count):
 
     #获取该类型下按分数排序的电影列表
-    tempList=GetFilmList(type=type,order=5,length=count)
+    tempList=GetFilmList(type=type,order=5,length=2*count)
+    random.shuffle(tempList)
     if tempList.count()>count:
         return tempList[0:count-1]
     return tempList
