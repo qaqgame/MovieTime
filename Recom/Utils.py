@@ -70,9 +70,9 @@ def GetRecommList(ids,count,type):
     secondQueue=[]
 
     print(len(firstQueue))
-
+    size=len(firstQueue)
     #当二级队列足够或一级过长时终止
-    while len(secondQueue)<count and len(firstQueue)<3*count and len(firstQueue)>0:
+    while len(secondQueue)<count*size and len(firstQueue)<size*size*count and len(firstQueue)>0:
         mov=firstQueue.pop()
         # 获取所有推荐
         allRecomm = CosRelation.objects.filter(Movie1Origin=mov.MovOriginId).order_by('Relation')
