@@ -6,7 +6,7 @@ import json
 import random
 # Create your views here.
 from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes, ParseMovieRegions, GetFilmList, \
-    RegionList, ToTypeNum, wrapTheMovie, GetReplies, CreateAgree, CancelAgree
+    RegionList, ToTypeNum, wrapTheMovie, GetReplies, CreateAgree, CancelAgree, wrapTag
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
 from Recom.Utils import GetRecommList, GetRecommByType
 
@@ -183,7 +183,7 @@ def ViewRecord(request, un):
             oneMessage['moviename'] = movieName
             oneMessage['extrainfo'] =  movViewTime
             movList.append(oneMessage)
-        movList.sort(key=lambda w:w["extrainfo"])
+        movList.sort(key=lambda w:w["extrainfo"],reverse=True)
         data['histories'] = movList
         res['reason'] = ''
         res['result'] = 'success'
@@ -235,6 +235,11 @@ def movInfo(request, mn):
     # 评分
     movieinfo['rate'] = movInstance.MovScore
     uid = GetUser(request.session.get('user1'))
+
+    # 获取标签
+    tags=MovTagConnection.objects.filter(MovId=movInstance.MovId)
+    tagList=wrapTag(tags)
+    movieinfo['tags']=tagList
     # print(uid.UserId)
     if not uid:
         ifKeeped = False
@@ -300,7 +305,7 @@ def timeLine(request, un):
                     tempag['detail']=ta.UserId.UserName+' 点赞了你的评论('+reply.ReplyContent+')'
                     timelines.append(tempag)
 
-    timelines.sort(key=lambda w:w["actiontime"])
+    timelines.sort(key=lambda w:w["actiontime"],reverse=True)
     data = {}
     data['timeline'] = timelines
     res = wrapTheJson("success", "", data=data)
@@ -496,6 +501,35 @@ def getKeep(request, un):
     res = wrapTheJson("success", '', data)
     return JsonResponse(res)
 
+#获取该用户的评论
+def getUserReply(request):
+    username = request.session.get('user1', '')
+    if username == '':
+        res = wrapTheJson('failed', '没有登陆')
+        return JsonResponse(res)
+    userInstance = GetUser(username)
+    replys = models.ReplyRecord.objects.filter(UserId=userInstance.UserId)
+    timelines = []
+    for record in replys:
+        timeline = {}
+        # 评论电影
+        timeline['actiontime'] = record.RecordTime
+        if record.ReplyType == 1:
+            MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
+            str = "评论了电影 " + MovName + ":" +record.ReplyGrade+","+ record.ReplyContent
+        else:
+            #获取评论目标
+            target=ReplyRecord.objects.filter(RecordId=record.TargetId)[0]
+            content=target.ReplyContent
+            username = target.UserId.UserName
+            str = "评论了" + username + "的评论("+content+"):" + record.ReplyContent
+        timeline['detail'] = str
+        timelines.append(timeline)
+    timelines.sort(key=lambda w: w["actiontime"], reverse=True)
+    data = {}
+    data['timeline'] = timelines
+    res = wrapTheJson('success', '', data=data)
+    return JsonResponse(res)
 
 def likeType(request):
     recv_data = json.loads(request.body.decode())  # 解析前端发送的JSON格式的数据
