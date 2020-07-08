@@ -342,6 +342,7 @@ def AddTag(request):
     data['tagcontent']=instance.MovTagCnt
     data['agree']=conn.AgreeCount
     data['tagid']=instance.MovTagId
+    data['agreed']=False
     res=wrapTheJson('success','',data)
     return JsonResponse(res)
 
