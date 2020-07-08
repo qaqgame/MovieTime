@@ -137,7 +137,9 @@ def UserSpace(request,un):
 
             # 获取电影名
             name=MovInstance.MovName
-            favResultList.append({'movieimgurl': cover, 'moviename': name, 'extrainfo': date})
+
+            movid=MovInstance.MovId
+            favResultList.append({'movieimgurl': cover, 'moviename': name,'movieid':movid,'extrainfo': date})
 
 
         # 处理session部分
@@ -182,6 +184,7 @@ def ViewRecord(request, un):
             oneMessage['movieimgurl'] = movImg
             oneMessage['moviename'] = movieName
             oneMessage['extrainfo'] =  movViewTime
+            oneMessage['movieid']=movid
             movList.append(oneMessage)
         movList.sort(key=lambda w:w["extrainfo"],reverse=True)
         data['histories'] = movList
@@ -196,9 +199,8 @@ def ViewRecord(request, un):
 
 # 电影详细信息
 def movInfo(request, mn):
-    movName = mn
-    print(movName)
-    movInstance = models.Movie.objects.filter(MovName=movName)
+    movId = mn
+    movInstance = models.Movie.objects.filter(MovId=movId)
     if not movInstance.exists():
         res = wrapTheJson("failed", '不存在这部电影')
         return JsonResponse(res)
@@ -226,8 +228,6 @@ def movInfo(request, mn):
     actors = []
     # print(actorIds[0].ActorId, actorIds[0])
     for id in actorIds:
-        print(id.ActorId)
-
         actor = id.ActorId.ActorName
         actors.append(actor)
     movieinfo['actors'] = actors
@@ -463,17 +463,16 @@ def cancelAgree(request):
 
 
 def keep(request):
-    moviename = request.GET.get("moviename", '')
-    if moviename == '':
+    movieid = request.GET.get("movieid", '')
+    if movieid == '':
         res = wrapTheJson("failed", "没有得到电影名")
         return JsonResponse(res)
-    movie = models.Movie.objects.filter(MovName=moviename)
+    movie = models.Movie.objects.filter(MovId=movieid)
     if not movie.exists():
         res = wrapTheJson("failed", "没有该电影名的数据")
         return JsonResponse(res)
     movId = movie[0].MovId
     uid = GetUser(request.session.get('user1'))
-    print(uid)
     favRecord = models.FavoriteRecord.objects.create(UserId=uid, TargetId=movId)
     res = wrapTheJson("success", '')
     return JsonResponse(res)
@@ -495,6 +494,7 @@ def getKeep(request, un):
         #     continue
         message['movieimgurl'] = GetMovImgUrl(movie)
         message['moviename'] = movie.MovName
+        message['movieid']=movie.MovId
         message['extrainfo'] = favMovie.RecordTime
         timeline.append(message)
     data['keepmovies'] = timeline
@@ -705,8 +705,7 @@ def createReply(request):
     uid = userInstance.UserId
     if(recv_data['type'] == "movie"):
         grade = recv_data['grade']
-        moviename = recv_data['moviename']
-        movid = models.Movie.objects.filter(MovName=moviename)[0].MovId
+        movid= recv_data['movieid']
         reply=models.ReplyRecord.objects.create(UserId=userInstance, TargetId=movid, ReplyType=1, ReplyGrade=grade, ReplyContent=content)
         # reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=movid, ReplyType=1, ReplyGrade=grade, ReplyContent=content).order_by("-RecordTime")[0]
 
@@ -725,8 +724,7 @@ def createReply(request):
     else:
         print(type)
         replyid = recv_data['replyid']
-        moviename=recv_data['moviename']
-        movid = models.Movie.objects.filter(MovName=moviename)[0].MovId
+        movid=recv_data['movieid']
         reply=models.ReplyRecord.objects.create(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content)
         #reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content).order_by("-RecordTime")[0]
         print(reply)
