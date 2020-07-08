@@ -30,6 +30,7 @@ def _addToQueue(queue,item):
 def GetRecommList(ids,count,type):
     #result=[]
     tempList=[]
+    firstQueue = []
     print("GetRecommList ", len(ids))
     #如果是列表，进行遍历添加
     if isinstance(ids,list):
@@ -38,13 +39,13 @@ def GetRecommList(ids,count,type):
             tempRelation=CosRelation.objects.filter(Movie1=mid)
             if tempRelation.exists():
                 mov=Movie.objects.filter(MovId=mid)
-                tempList.append(mov)
+                firstQueue.append(mov)
     else:
         tempRelation = CosRelation.objects.filter(Movie1=ids)
         if not tempRelation.exists():
             return None
         mov = Movie.objects.filter(MovId=ids)
-        tempList.append(mov)
+        firstQueue.append(mov)
     #
     # #获取原电影数目
     # originCount=tempRecoms.__len__()
@@ -62,7 +63,7 @@ def GetRecommList(ids,count,type):
     # 二级推荐队列
     secondQueue=[]
 
-    firstQueue=[]
+
 
     #当二级队列足够或一级过长时终止
     while len(secondQueue)<count and len(firstQueue)<3*count:
