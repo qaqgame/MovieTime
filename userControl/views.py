@@ -707,7 +707,6 @@ def getRec(request):
             wests=getWrappedRecommand(ids=movids,type=(1<<18),count=20,user=userInstance)
             musics=getWrappedRecommand(ids=movids,type=(1<<12),count=20,user=userInstance)
             disasters=getWrappedRecommand(ids=movids,type=(1<<23),count=20,user=userInstance)
-            xijvs=getWrappedRecommand(ids=movids,type=(1<<27),count=20,user=userInstance)
             jvqings=getWrappedRecommand(ids=movids,type=(1<<29),count=20,user=userInstance)
 
             data = {}
@@ -723,7 +722,6 @@ def getRec(request):
             data['西部'] = wests
             data['音乐'] = musics
             data['灾难'] = disasters
-            data['喜剧'] = xijvs
             data['剧情'] = jvqings
             res = wrapTheJson("success", '', data=data)
             return JsonResponse(res)
@@ -738,7 +736,6 @@ def getRec(request):
     wests = wrapTheMovie(GetRecommByType(1<<18,20,user=userInstance))
     musics = wrapTheMovie(GetRecommByType(1<<12,20,user=userInstance))
     disasters = wrapTheMovie(GetRecommByType(1<<23,20,user=userInstance))
-    xijvs = wrapTheMovie(GetRecommByType(1<<27,20,user=userInstance))
     jvqings = wrapTheMovie(GetRecommByType(1<<29,20,user=userInstance))
     allmovies=(wrapTheMovie(GetRecommByType(userInstance.Types,20,user=userInstance)))
 
@@ -755,7 +752,6 @@ def getRec(request):
     data['西部'] = wests
     data['音乐'] = musics
     data['灾难'] = disasters
-    data['喜剧'] = xijvs
     data['剧情'] = jvqings
     res = wrapTheJson("success", '', data=data)
     return JsonResponse(res)
