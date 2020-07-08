@@ -695,7 +695,7 @@ def getRec(request):
             defaultAllType=~(1<<30)
             testP1 = GetRecByIds(movids=movids,type=defaultAllType,count=20)
             print("testP1",testP1.__len__())
-            allmovies = getWrappedRecommand(movids,defaultAllType,20)
+            allmovies = getWrappedRecommand(movids,userInstance.Types,20)
 
             comics = (getWrappedRecommand(ids=movids,type=(1<<2),count=20))
             crimes=(getWrappedRecommand(ids=movids,type=(1<<4),count=20))
