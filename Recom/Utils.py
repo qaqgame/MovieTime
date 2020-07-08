@@ -87,6 +87,7 @@ def GetRecommList(ids,count,type):
                     elif (realMov in tempList):
                         _addToQueue(secondQueue,realMov)
                         continue
+                print('add')
                 # 否则，直接加入一级列表
                 firstQueue.append(realMov)
 
