@@ -437,10 +437,13 @@ def wrapTag(tags,user):
         temp['tagid']=tag.MovTagId.MovTagId
         temp['tagcontent']=tag.MovTagId.MovTagCnt
         temp['agree']=tag.AgreeCount
-        targetId=tag.MovTagId.MovTagId+'#'+tag.MovId.MovId
-        ins=Agree.objects.filter(UserId=user,TargetId=targetId)
-        if ins.exists():
-            temp['agreed']=True
+        if user!=None:
+            targetId=tag.MovTagId.MovTagId+'#'+tag.MovId.MovId
+            ins=Agree.objects.filter(UserId=user,TargetId=targetId)
+            if ins.exists():
+                temp['agreed']=True
+            else:
+                temp['agreed']=False
         else:
             temp['agreed']=False
         result.append(temp)
