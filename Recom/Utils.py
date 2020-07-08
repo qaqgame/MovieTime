@@ -1,6 +1,6 @@
 import random
 
-from Main.models import Movie
+from Main.models import Movie, FavoriteRecord
 from Main.utils import GetFilmList
 from Main.models import CosRelation
 import numpy as np
@@ -197,11 +197,19 @@ def GetRecommList(ids,count,type):
 
 
 # 根据类型获取推荐
-def GetRecommByType(type,count):
+def GetRecommByType(type,count,user):
 
     #获取该类型下按分数排序的电影列表
-    tempList=list(GetFilmList(type=type,order=5,length=2*count))
-    random.shuffle(tempList)
-    if len(tempList)>count:
-        return tempList[0:count]
-    return tempList
+
+    cnt=0
+    result=[]
+    while len(result)<count:
+        tempList = list(GetFilmList(type=type, order=5, startIdx=cnt,length=3 * count))
+        random.shuffle(tempList)
+        for mov in tempList:
+            #检索不在收藏中的电影
+            favRec=FavoriteRecord.objects.filter(UserId=user,TargetId=mov.MovId)
+            if not favRec.exists():
+                result.append(favRec)
+        cnt+=3*count
+    return result
