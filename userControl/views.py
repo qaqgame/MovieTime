@@ -264,6 +264,8 @@ def timeLine(request, un):
             timeline['actiontime'] = message.RecordTime
             timeline['title'] = GetTitle(sub.__name__)
             timeline['detail'] = wrapTheDetail(sub.__name__, message.TargetId)
+            if timeline['detail'] == None:
+                continue
             timelines.append(timeline)
     timelines.sort(key=lambda w:w["actiontime"])
     data = {}
