@@ -416,8 +416,8 @@ def wrapTheDetail(name, id):
             movName=Movie.objects.get(MovId=movId).MovName
             tagName=MovieTag.objects.get(MovTagId=tagId).MovTagCnt
             temp={}
-            temp['origin']=''
-            temp['originId']=''
+            temp['origin']=movName
+            temp['originId']=movId
             temp['detail']="点赞了 "+movName+" 的标签:" + tagName
             return temp
     if name == 'EditRecord':
@@ -438,11 +438,13 @@ def wrapTheDetail(name, id):
         record = ReplyRecord.objects.filter(RecordId=id)[0]
         # 评论电影
         if record.ReplyType == 1:
-            MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
+            MovInstance = Movie.objects.filter(MovId=record.TargetId)[0]
+            movName = MovInstance.MovName
+            movId = MovInstance.MovId
             temp = {}
-            temp['origin'] = ''
-            temp['originId'] = ''
-            temp['detail'] = "评论了电影 "+ MovName + "\t" + record.ReplyContent
+            temp['origin'] = movName
+            temp['originId'] = movId
+            temp['detail'] = "评论了电影 "+ movName + "\t" + record.ReplyContent
             return temp
         else:
             targetRecord=ReplyRecord.objects.filter(RecordId=record.TargetId)[0]
@@ -450,7 +452,7 @@ def wrapTheDetail(name, id):
             targetContent=targetRecord.ReplyContent
             temp = {}
             temp['origin'] = username
-            temp['originId'] = targetRecord.UserId
+            temp['originId'] = targetRecord.UserId.UserId
             temp['detail'] = "回复了" + username + "的评论("+targetContent+")" +  "\t" + record.ReplyContent
             return temp
     temp={}

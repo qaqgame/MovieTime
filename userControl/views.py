@@ -394,7 +394,7 @@ def search(request):
     #     conditions['MovDate'] = time
     # if moviename != '':
     #     conditions['MovName'] = moviename
-    movies = GetFilmList(typeList,regionList,moviename,0,startIdx,20)
+    movies = GetFilmList(typeList,regionList,moviename,5,startIdx,20)
     if not movies.exists():
         res = wrapTheJson("failed", "没有符合条件的电影")
         return JsonResponse(res)
