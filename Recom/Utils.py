@@ -22,17 +22,17 @@ def ImportRelation(id1,id1Origin,id2,id2Origin,relation):
 
 def _addToQueue(queue,item,cnt):
     for i in queue:
-        if i['item']==item:
+        if i['item'].MovId==item.MovId:
             i['power']+=cnt
             return
     temp={}
     temp['item']=item
     temp['power']=cnt
-    queue.append(temp)
+    queue.append(temp.copy())
 
 def _getFromQueue(queue,item):
     for i in queue:
-        if i['item']==item:
+        if i['item'].MovId==item.MovId:
             return i
     return None
 
@@ -53,7 +53,7 @@ def GetRecommList(ids,count,type):
                 tempItm={}
                 tempItm['power']=100.0
                 tempItm['item']=mov
-                firstQueue.append(tempItm)
+                firstQueue.append(tempItm.copy())
     else:
         mov = Movie.objects.filter(MovId=ids)[0]
         realId=mov.MovOriginId
@@ -63,7 +63,7 @@ def GetRecommList(ids,count,type):
         tempItm = {}
         tempItm['power'] = 100.0
         tempItm['item'] = mov
-        firstQueue.append(tempItm)
+        firstQueue.append(tempItm.copy())
     #
     # #获取原电影数目
     # originCount=tempRecoms.__len__()
@@ -87,6 +87,7 @@ def GetRecommList(ids,count,type):
     while len(secondQueue)<count and len(firstQueue)<size*count and len(firstQueue)>0:
         item=firstQueue.pop()
         mov=item['item']
+        print(type(mov))
         # 获取所有推荐
         allRecomm = CosRelation.objects.filter(Movie1Origin=mov.MovOriginId).order_by('Relation')
         print('get recom:'+str(len(allRecomm)))
