@@ -294,31 +294,30 @@ def timeLine(request, un):
             if sub.__name__ == 'ReplyRecord':
                 reply = ReplyRecord.objects.filter(RecordId=message.RecordId)[0]
                 targetMsg = ReplyRecord.objects.filter(TargetId=message.RecordId)
-                if not targetMsg.exists():
-                    continue
-                for tm in targetMsg:
-                    #非本人的操作
-                    if tm.UserId.UserId!=reply.UserId.UserId:
-                        temptl = {}
-                        temptl['actiontime'] = tm.RecordTime
-                        temptl['title'] = GetTitle(sub.__name__)
-                        temptl['detail'] = tm.UserId.UserName + " 评论了你的回复("+reply.ReplyContent+"):" + tm.ReplyContent
-                        temptl['target']=tm.UserId.UserName
-                        timelines.append(temptl)
+                if targetMsg.exists():
+                    for tm in targetMsg:
+                        # 非本人的操作
+                        if tm.UserId.UserId is not reply.UserId.UserId:
+                            temptl = {}
+                            temptl['actiontime'] = tm.RecordTime
+                            temptl['title'] = GetTitle(sub.__name__)
+                            temptl[
+                                'detail'] = tm.UserId.UserName + " 评论了你的回复(" + reply.ReplyContent + "):" + tm.ReplyContent
+                            temptl['target'] = tm.UserId.UserName
+                            timelines.append(temptl)
 
                 #查询点赞
                 targetAgree=Agree.objects.filter(TargetId=message.RecordId)
-                if not targetAgree.exists():
-                    continue
-                for ta in targetAgree:
-                    # 非本人的操作
-                    if ta.UserId.UserId != reply.UserId.UserId:
-                        tempag={}
-                        tempag['actiontime']=ta.RecordTime
-                        tempag['title']=GetTitle('Agree')
-                        tempag['detail']=ta.UserId.UserName+' 点赞了你的评论('+reply.ReplyContent+')'
-                        tempag['target']=ta.UserId.UserName
-                        timelines.append(tempag)
+                if targetAgree.exists():
+                    for ta in targetAgree:
+                        # 非本人的操作
+                        if ta.UserId.UserId is not reply.UserId.UserId:
+                            tempag={}
+                            tempag['actiontime']=ta.RecordTime
+                            tempag['title']=GetTitle('Agree')
+                            tempag['detail']=ta.UserId.UserName+' 点赞了你的评论('+reply.ReplyContent+')'
+                            tempag['target']=ta.UserId.UserName
+                            timelines.append(tempag)
 
     timelines.sort(key=lambda w:w["actiontime"],reverse=True)
     data = {}
