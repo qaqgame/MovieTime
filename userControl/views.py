@@ -326,8 +326,11 @@ def AddTag(request):
         instance=MovieTag.objects.create(MovTagCnt=tag)
     else:
         instance=instances[0]
-
-    conn=MovTagConnection.objects.create(MovTagId=instance,MovId=movIns)
+    conns=MovTagConnection.objects.create(MovTagId=instance,MovId=movIns)
+    if not conns.exists():
+        conn=MovTagConnection.objects.create(MovTagId=instance,MovId=movIns)
+    else:
+        res=wrapTheJson('failed','标签已存在')
     data={}
     data['tagcontent']=instance.MovTagCnt
     data['agree']=conn.AgreeCount
