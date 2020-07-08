@@ -379,11 +379,11 @@ def wrapTheDetail(name, id):
         if record.AgreeType == 1:
             type = record.get_AgreeType_display()
             reply = ReplyRecord.objects.filter(RecordId=record.TargetId)[0]
+            userName=reply.UserId.UserName
             # 点赞了电影评论
             # if reply.ReplyType == 1:
-            type = reply.get_ReplyType_display() + type
             content = reply.ReplyContent
-            return "点赞了" + type + "  " + content
+            return "点赞了 " + userName+" 的评论:" + content
             # else:
             #     type = reply.get_ReplyType_display() + type
             #     content = reply.ReplyContent
@@ -392,8 +392,10 @@ def wrapTheDetail(name, id):
         if record.AgreeType == 2:
             # record = Agree.objects.filter(RecordId=id)[0]
             type = record.get_AgreeType_display()
-            movTag = MovieTag.objects.filter(MovTagId=record.TargetId)[0]
-            return "点赞了" + type + "  " + movTag.MovTagCnt
+            tagId,movId=record.TargetId.split('#')
+            movName=Movie.objects.get(MovId=movId).MovName
+            tagName=MovieTag.objects.get(MovTagId=tagId).MovTagCnt
+            return "点赞了 "+movName+" 的标签:" + tagName
     if name == 'EditRecord':
         record = EditRecord.objects.filter(RecordId=id)[0]
         # 修改信息
@@ -409,8 +411,10 @@ def wrapTheDetail(name, id):
             MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
             return "评论了电影 "+ MovName + "\t" + record.ReplyContent
         else:
-            username = User.objects.filter(UserId=record.TargetId)[0].UserName
-            return "评论了" + username + "的评论" +  "\t" + record.ReplyContent
+            targetRecord=ReplyRecord.objects.filter(RecordId=record.TargetId)[0]
+            username = targetRecord.UserId.UserName
+            targetContent=targetRecord.ReplyContent
+            return "回复了" + username + "的评论("+targetContent+")" +  "\t" + record.ReplyContent
 
 
 def wrapTheMovie(movies):

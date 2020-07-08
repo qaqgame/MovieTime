@@ -274,6 +274,30 @@ def timeLine(request, un):
             if timeline['detail'] == None:
                 continue
             timelines.append(timeline)
+
+            # 如果是评论，则查询他人对自己的评论及点赞
+            if sub.__name__ == 'ReplyRecord':
+                reply = ReplyRecord.objects.filter(RecordId=id)[0]
+                targetMsg = ReplyRecord.objects.filter(TargetId=message.RecordId)
+                if not targetMsg.exists():
+                    continue
+                for tm in targetMsg:
+                    temptl = {}
+                    temptl['actiontime'] = tm.RecordTime
+                    temptl['title'] = GetTitle(sub.__name__)
+                    temptl['detail'] = tm.UserId.UserName + " 评论了你的回复("+reply.ReplyContent+"):" + tm.ReplyContent
+                    timelines.append(temptl)
+
+                #查询点赞
+                targetAgree=Agree.objects.filter(TargetId=message.RecordId)
+                if not targetAgree.exists():
+                    continue
+                for ta in targetAgree:
+                    tempag={}
+                    tempag['actiontime']=ta.RecordTime
+                    tempag['title']=GetTitle('Agree')
+                    tempag['detail']=ta.UserId.UserName+' 点赞了你的评论('+reply.ReplyContent+')'
+
     timelines.sort(key=lambda w:w["actiontime"])
     data = {}
     data['timeline'] = timelines
