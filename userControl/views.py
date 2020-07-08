@@ -502,8 +502,9 @@ def getKeep(request, un):
     return JsonResponse(res)
 
 #获取该用户的评论
-def getUserReply(request):
-    username = request.session.get('user1', '')
+def getUserReply(request,un):
+    # username = request.session.get('user1', '')
+    username = un
     if username == '':
         res = wrapTheJson('failed', '没有登陆')
         return JsonResponse(res)
@@ -516,18 +517,18 @@ def getUserReply(request):
         timeline['actiontime'] = record.RecordTime
         if record.ReplyType == 1:
             MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
-            str = "评论了电影 " + MovName + ":" +record.ReplyGrade+","+ record.ReplyContent
+            str1 = "评论了电影 " + MovName + ":" +str(record.ReplyGrade)+","+ record.ReplyContent
         else:
             #获取评论目标
             target=ReplyRecord.objects.filter(RecordId=record.TargetId)[0]
             content=target.ReplyContent
             username = target.UserId.UserName
-            str = "评论了" + username + "的评论("+content+"):" + record.ReplyContent
-        timeline['detail'] = str
+            str1 = "评论了" + username + "的评论("+content+"):" + record.ReplyContent
+        timeline['detail'] = str1
         timelines.append(timeline)
     timelines.sort(key=lambda w: w["actiontime"], reverse=True)
     data = {}
-    data['timeline'] = timelines
+    data['coms'] = timelines
     res = wrapTheJson('success', '', data=data)
     return JsonResponse(res)
 

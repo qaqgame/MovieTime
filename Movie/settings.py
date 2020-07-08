@@ -25,7 +25,7 @@ SECRET_KEY = 'i6)xvou4v#0rf8-^)=1p3dnzjl5h=ixb-c_v@x1)-@o8@7&ilw'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
