@@ -432,7 +432,8 @@ def wrapTheDetail(name, id):
         temp = {}
         temp['origin'] = MovName
         temp['originId'] = Movid
-        temp['detail'] = "浏览了" + MovName + "电影"
+        temp['detail'] = "收藏了" + MovName + "电影"
+        return temp
     if name == 'ReplyRecord':
         record = ReplyRecord.objects.filter(RecordId=id)[0]
         # 评论电影
