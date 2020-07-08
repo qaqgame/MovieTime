@@ -262,11 +262,12 @@ def timeLine(request, un):
     uid = GetUser(un).UserId
     timelines = []
     for sub in models.BaseRecord.__subclasses__():
-        timeline = {}
         messages = sub.objects.filter(UserId=uid)
         if not messages.exists():
             continue
         for message in messages:
+            timeline = {}
+            print(message, sub.__name__)
             timeline['actiontime'] = message.RecordTime
             timeline['title'] = GetTitle(sub.__name__)
             timeline['detail'] = wrapTheDetail(sub.__name__, message.RecordId)

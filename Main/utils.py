@@ -368,7 +368,9 @@ def GetMovImgUrl(MovInstance):
 def wrapTheDetail(name, id):
     if(name == 'ViewRecord'):
         record = ViewRecord.objects.filter(RecordId=id)[0]
+        print("targetid: ",record.TargetId)
         MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
+        print("movname",MovName)
         return "浏览了" + MovName + "电影"
         # name.objects.filter()
     if name == "AgreeRecord":
