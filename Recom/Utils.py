@@ -83,6 +83,9 @@ def GetRecommList(ids,count,type):
             print(rec.Movie2Origin+',mov:'+rec.Movie2)
             tttm=Movie.objects.filter(MovId=rec.Movie2)[0]
             print('2mov:'+tttm.MovOriginId)
+<<<<<<< HEAD
+>>>>>>> 33e0e144b4d04dbe2c3055df3027837821a30cce
+=======
 >>>>>>> 33e0e144b4d04dbe2c3055df3027837821a30cce
             if realMovs.exists():
                 realMov=realMovs[0]
