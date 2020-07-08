@@ -247,12 +247,13 @@ def movInfo(request, mn):
     movieinfo['ifKeeped'] = ifKeeped
     data['movieinfo'] = movieinfo
     res = wrapTheJson("success", '', data=data)
-    viewRecord=models.ViewRecord.objects.filter(UserId=uid, TargetId=movInstance.MovId)
-    if not viewRecord:
-        models.ViewRecord.objects.create(UserId=uid,TargetId=movInstance.MovId)
-    else:
-        viewRecord[0].RecordTime=datetime.datetime.now()
-        viewRecord[0].save()
+    if not uid:
+        viewRecord=models.ViewRecord.objects.filter(UserId=uid, TargetId=movInstance.MovId)
+        if not viewRecord:
+            models.ViewRecord.objects.create(UserId=uid,TargetId=movInstance.MovId)
+        else:
+            viewRecord[0].RecordTime=datetime.datetime.now()
+            viewRecord[0].save()
     return JsonResponse(res)
 
 

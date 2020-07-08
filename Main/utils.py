@@ -441,9 +441,12 @@ def GetWrappedReply(replyInstance,userIns):
     # 评论时间
     temp['time'] = replyInstance.RecordTime
 
-    # 查询是否点赞
-    tempAg=Agree.objects.filter(TargetId=replyInstance.RecordId,UserId=userIns.UserId)
-    if tempAg.exists():
+    if userIns:
+        # 查询是否点赞
+        tempAg=Agree.objects.filter(TargetId=replyInstance.RecordId,UserId=userIns.UserId)
+    else:
+        tempAg=None
+    if tempAg!=None and tempAg.exists():
         temp['agreed']=True
     else:
         temp['agreed']=False
