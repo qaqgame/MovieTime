@@ -6,7 +6,7 @@ import json
 import random
 # Create your views here.
 from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes, ParseMovieRegions, GetFilmList, \
-    RegionList, ToTypeNum, wrapTheMovie, GetReplies, CreateAgree, CancelAgree, wrapTag
+    RegionList, ToTypeNum, wrapTheMovie, GetReplies, CreateAgree, CancelAgree, wrapTag, AddUserExp
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
 from Recom.Utils import GetRecommList, GetRecommByType
 
@@ -30,6 +30,7 @@ def login(request):
             request.session['user1'] = name
             uins=user[0]
             request.session['level']=uins.UserLevel
+            AddUserExp(uins,5)
             # request.session.save()
             print(request.session['user1'])
             # path = request.POST.get('next')
@@ -106,7 +107,7 @@ def UserSpace(request,un):
         usermax=userInstance.UserMaxExp
         newUser=not userInstance.HasView
         userData={'username':username,'currlevel':userlv,'currexp':usercur,'maxexp':usermax,"newuser":newUser}
-
+        request.session['level']=userInstance.UserLevel
         # 查询该收藏
         favList=models.FavoriteRecord.objects.filter(UserId=userInstance.UserId)
         print(favList.__len__())
@@ -264,6 +265,7 @@ def movInfo(request, mn):
         viewRecord=models.ViewRecord.objects.filter(UserId=uid, TargetId=movInstance.MovId)
         if not viewRecord:
             models.ViewRecord.objects.create(UserId=uid,TargetId=movInstance.MovId)
+            AddUserExp(uid,1)
         else:
             viewRecord[0].RecordTime=datetime.datetime.now()
             viewRecord[0].save()
@@ -295,22 +297,28 @@ def timeLine(request, un):
                 if not targetMsg.exists():
                     continue
                 for tm in targetMsg:
-                    temptl = {}
-                    temptl['actiontime'] = tm.RecordTime
-                    temptl['title'] = GetTitle(sub.__name__)
-                    temptl['detail'] = tm.UserId.UserName + " 评论了你的回复("+reply.ReplyContent+"):" + tm.ReplyContent
-                    timelines.append(temptl)
+                    #非本人的操作
+                    if tm.UserId.UserId!=reply.UserId.UserId:
+                        temptl = {}
+                        temptl['actiontime'] = tm.RecordTime
+                        temptl['title'] = GetTitle(sub.__name__)
+                        temptl['detail'] = tm.UserId.UserName + " 评论了你的回复("+reply.ReplyContent+"):" + tm.ReplyContent
+                        temptl['target']=tm.UserId.UserName
+                        timelines.append(temptl)
 
                 #查询点赞
                 targetAgree=Agree.objects.filter(TargetId=message.RecordId)
                 if not targetAgree.exists():
                     continue
                 for ta in targetAgree:
-                    tempag={}
-                    tempag['actiontime']=ta.RecordTime
-                    tempag['title']=GetTitle('Agree')
-                    tempag['detail']=ta.UserId.UserName+' 点赞了你的评论('+reply.ReplyContent+')'
-                    timelines.append(tempag)
+                    # 非本人的操作
+                    if ta.UserId.UserId != reply.UserId.UserId:
+                        tempag={}
+                        tempag['actiontime']=ta.RecordTime
+                        tempag['title']=GetTitle('Agree')
+                        tempag['detail']=ta.UserId.UserName+' 点赞了你的评论('+reply.ReplyContent+')'
+                        tempag['target']=ta.UserId.UserName
+                        timelines.append(tempag)
 
     timelines.sort(key=lambda w:w["actiontime"],reverse=True)
     data = {}
@@ -438,7 +446,8 @@ def agree(request):
     if not userInstance:
         res = wrapTheJson('failed', '无法找到该用户')
         return JsonResponse(res)
-
+    else:
+        AddUserExp(userInstance,2)
     try:
         result=CreateAgree(userInstance,targetId,agreeType,movId)
         print(result)
@@ -744,6 +753,7 @@ def createReply(request):
     content = recv_data['content']
     username = request.session.get('user1', '')
     userInstance = GetUser(username)
+    AddUserExp(userInstance,10)
     uid = userInstance.UserId
     if(recv_data['type'] == "movie"):
         grade = recv_data['grade']
