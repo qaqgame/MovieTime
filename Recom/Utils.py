@@ -74,17 +74,20 @@ def GetRecommList(ids,count,type):
         # 加入一级列表
         for rec in allRecomm:
             realMovs=Movie.objects.filter(MovOriginId=rec.Movie2Origin)
+            print(rec.Movie2Origin)
             if realMovs.exists():
                 realMov=realMovs[0]
                 # 如果类型满足
                 if realMov.MovType&int(type)!=0:
                     # 如果已存在，则加入二级列表
                     if (realMov in firstQueue) and (realMov.MovId not in ids) and(realMov not in tempList):
+                        print('add second')
                         firstQueue.remove(realMov)
                         _addToQueue(secondQueue,realMov)
                         tempList.append(realMov)
                         continue
                     elif (realMov in tempList):
+                        print('in temp,add second')
                         _addToQueue(secondQueue,realMov)
                         continue
                 print('add')
