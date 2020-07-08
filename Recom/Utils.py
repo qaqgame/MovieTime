@@ -202,6 +202,6 @@ def GetRecommByType(type,count):
     #获取该类型下按分数排序的电影列表
     tempList=list(GetFilmList(type=type,order=5,length=2*count))
     random.shuffle(tempList)
-    if tempList.count()>count:
-        return tempList[0:count-1]
+    if len(tempList)>count:
+        return tempList[0:count]
     return tempList
