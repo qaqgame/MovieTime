@@ -649,13 +649,13 @@ def GetReply(request):
         res=wrapTheJson('success','',data)
         return JsonResponse(res)
 
-def getWrappedRecommand(ids,type,count):
+def getWrappedRecommand(ids,type,count,user):
     result=(wrapTheMovie(GetRecByIds(movids=ids,type=type,count=count)))
     if not result:
-        result=wrapTheMovie(GetRecommByType(type,count))
+        result=wrapTheMovie(GetRecommByType(type,count,user))
     if len(result)<count:
         rest=count-len(result)
-        temp=wrapTheMovie(GetRecommByType(type,rest))
+        temp=wrapTheMovie(GetRecommByType(type,rest,user))
         for t in temp:
             result.append(t)
     return result
@@ -695,20 +695,20 @@ def getRec(request):
             defaultAllType=~(1<<30)
             testP1 = GetRecByIds(movids=movids,type=defaultAllType,count=20)
             print("testP1",testP1.__len__())
-            allmovies = getWrappedRecommand(movids,userInstance.Types,20)
+            allmovies = getWrappedRecommand(movids,userInstance.Types,20,userInstance)
 
-            comics = (getWrappedRecommand(ids=movids,type=(1<<2),count=20))
-            crimes=(getWrappedRecommand(ids=movids,type=(1<<4),count=20))
-            threats=(getWrappedRecommand(ids=movids,type=(1<<7),count=20))
-            fictions=(getWrappedRecommand(ids=movids,type=(1<<9),count=20))
-            jingsongs=getWrappedRecommand(ids=movids,type=(1<<10),count=20)
-            loves=getWrappedRecommand(ids=movids,type=(1<<11),count=20)
-            actions=getWrappedRecommand(ids=movids,type=(1<<15),count=20)
-            wests=getWrappedRecommand(ids=movids,type=(1<<18),count=20)
-            musics=getWrappedRecommand(ids=movids,type=(1<<12),count=20)
-            disasters=getWrappedRecommand(ids=movids,type=(1<<23),count=20)
-            xijvs=getWrappedRecommand(ids=movids,type=(1<<27),count=20)
-            jvqings=getWrappedRecommand(ids=movids,type=(1<<29),count=20)
+            comics = (getWrappedRecommand(ids=movids,type=(1<<2),count=20,user=userInstance))
+            crimes=(getWrappedRecommand(ids=movids,type=(1<<4),count=20,user=userInstance))
+            threats=(getWrappedRecommand(ids=movids,type=(1<<7),count=20,user=userInstance))
+            fictions=(getWrappedRecommand(ids=movids,type=(1<<9),count=20,user=userInstance))
+            jingsongs=getWrappedRecommand(ids=movids,type=(1<<10),count=20,user=userInstance)
+            loves=getWrappedRecommand(ids=movids,type=(1<<11),count=20,user=userInstance)
+            actions=getWrappedRecommand(ids=movids,type=(1<<15),count=20,user=userInstance)
+            wests=getWrappedRecommand(ids=movids,type=(1<<18),count=20,user=userInstance)
+            musics=getWrappedRecommand(ids=movids,type=(1<<12),count=20,user=userInstance)
+            disasters=getWrappedRecommand(ids=movids,type=(1<<23),count=20,user=userInstance)
+            xijvs=getWrappedRecommand(ids=movids,type=(1<<27),count=20,user=userInstance)
+            jvqings=getWrappedRecommand(ids=movids,type=(1<<29),count=20,user=userInstance)
 
             data = {}
             data['movietypes'] = ['动画', '犯罪', '恐怖', '科幻', '惊悚', '爱情', '动作', '西部', '音乐', '灾难', '喜剧', '剧情']
@@ -728,19 +728,19 @@ def getRec(request):
             res = wrapTheJson("success", '', data=data)
             return JsonResponse(res)
 
-    comics = wrapTheMovie(GetRecommByType(1<<2,20))
-    crimes = wrapTheMovie(GetRecommByType(1<<4,20))
-    threats = wrapTheMovie(GetRecommByType(1<<7,20))
-    fictions = wrapTheMovie(GetRecommByType(1<<9,20))
-    jingsongs = wrapTheMovie(GetRecommByType(1<<10,20))
-    loves = wrapTheMovie(GetRecommByType(1<<11,20))
-    actions = wrapTheMovie(GetRecommByType(1<<15,20))
-    wests = wrapTheMovie(GetRecommByType(1<<18,20))
-    musics = wrapTheMovie(GetRecommByType(1<<12,20))
-    disasters = wrapTheMovie(GetRecommByType(1<<23,20))
-    xijvs = wrapTheMovie(GetRecommByType(1<<27,20))
-    jvqings = wrapTheMovie(GetRecommByType(1<<29,20))
-    allmovies=(wrapTheMovie(GetRecommByType(userInstance.Types,20)))
+    comics = wrapTheMovie(GetRecommByType(1<<2,20,user=userInstance))
+    crimes = wrapTheMovie(GetRecommByType(1<<4,20,user=userInstance))
+    threats = wrapTheMovie(GetRecommByType(1<<7,20,user=userInstance))
+    fictions = wrapTheMovie(GetRecommByType(1<<9,20,user=userInstance))
+    jingsongs = wrapTheMovie(GetRecommByType(1<<10,20,user=userInstance))
+    loves = wrapTheMovie(GetRecommByType(1<<11,20,user=userInstance))
+    actions = wrapTheMovie(GetRecommByType(1<<15,20,user=userInstance))
+    wests = wrapTheMovie(GetRecommByType(1<<18,20,user=userInstance))
+    musics = wrapTheMovie(GetRecommByType(1<<12,20,user=userInstance))
+    disasters = wrapTheMovie(GetRecommByType(1<<23,20,user=userInstance))
+    xijvs = wrapTheMovie(GetRecommByType(1<<27,20,user=userInstance))
+    jvqings = wrapTheMovie(GetRecommByType(1<<29,20,user=userInstance))
+    allmovies=(wrapTheMovie(GetRecommByType(userInstance.Types,20,user=userInstance)))
 
     data = {}
     data['movietypes'] = ['动画', '犯罪', '恐怖', '科幻', '惊悚', '爱情', '动作', '西部', '音乐', '灾难', '喜剧', '剧情']
