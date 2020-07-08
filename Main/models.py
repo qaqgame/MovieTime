@@ -39,6 +39,7 @@ class MovieTag(models.Model):
     class Meta:
         verbose_name='电影标签'
         verbose_name_plural='电影标签'
+        indexes = [models.Index(fields=['MovTagCnt']), ]
 
 # 电影封面路径获取
 def cover_directory_path(instance, filename):
@@ -106,6 +107,10 @@ class Movie(models.Model):
         verbose_name='电影信息'
         verbose_name_plural='电影信息'
         managed = True
+        indexes = [models.Index(fields=['MovId']),
+                   models.Index(fields=['MovName']),
+                   models.Index(fields=['MovOriginId']),
+                   models.Index(fields=['MovScore']),]
 
 # 演员manager
 class ActorManager(models.Manager):
@@ -379,6 +384,10 @@ class CosRelation(models.Model):
     class Meta:
         unique_together=['Movie1','Movie2']
         index_together=['Movie1','Movie2']
+        indexes = [models.Index(fields=['Movie1']),
+                   models.Index(fields=['Movie1Origin']),
+                   models.Index(fields=['Relation']),]
+
 # id记录
 class IDCount(models.Model):
     # 类型
