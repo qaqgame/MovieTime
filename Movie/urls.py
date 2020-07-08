@@ -27,6 +27,10 @@ from userControl.views import search
 from userControl.views import index
 from userControl.views import createReply
 from userControl.views import GetReply
+from userControl.views import agree
+from userControl.views import cancelAgree
+from userControl.views import getUser
+from userControl.views import logout
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -43,5 +47,9 @@ urlpatterns = [
     path('index/',index),
     path('recom/',getRec),
     path('createreply/',createReply),
-    path('getreply',GetReply)
+    path('getreply',GetReply),
+    path('agree',agree),
+    path('cancelagree',cancelAgree),
+    path('loginVerify/',getUser),
+    path('logout/',logout)
 ]

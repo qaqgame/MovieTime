@@ -41,7 +41,7 @@ def login(request):
 
 def logout(request):
     request.session.flush()
-    return redirect('/login/')
+    return JsonResponse({'result': 'success', 'reason': '','data':{'target':'/'}})
 
 
 def index(request):
@@ -50,6 +50,18 @@ def index(request):
         return JsonResponse({'hasSes': 'false', 'next': '/ses_index/'})
     else:
         return render(request, 's_index.html')
+
+
+def getUser(request):
+    status = request.session.get('is_login')
+    if not status:
+        return JsonResponse({'result':'failed','reason':'','data':{'user': '前往登录', 'link': '/'}})
+    else:
+        username = request.session.get('user1')
+        if not username:
+            return JsonResponse({'result':'failed','reason':'','data':{'user': '前往登录', 'link': '/'}})
+        else:
+            return JsonResponse({'result':'success','reason':'','data':{'user': username, 'link': '/user/'+username}})
 
 
 def signup(request):
@@ -478,8 +490,9 @@ def GetRecByIds(movids,type,count):
 def GetReply(request):
     movName=request.GET.get('movname','')
     movId=request.GET.get('movid','')
-    startIdx=request.GET.get('start',0)
-    count=request.GET.get('count',20)
+    startIdx=int(request.GET.get('start',0))
+    count=int(request.GET.get('count',20))
+
     username = request.session.get('user1', '')
     userInstance = GetUser(username)
     if movId=='':
@@ -498,7 +511,7 @@ def GetReply(request):
         data={}
         data['count']=len(result)
         if len(result)<=startIdx+count:
-            data['replylist']=result
+            data['replylist'] = result[startIdx:]
         else:
             data['replylist']=result[startIdx:startIdx+count]
         res=wrapTheJson('success','',data)

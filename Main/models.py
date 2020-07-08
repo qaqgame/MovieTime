@@ -481,7 +481,7 @@ def Pre_Save_Agree_Handler(sender,instance,**kwargs):
 @receiver(pre_delete,sender=Agree)
 def Pre_Delete_Agree_Handler(sender,instance,**kwargs):
     # 如果点赞的是标签
-    if instance._state.adding and instance.AgreeType == 2:
+    if instance.AgreeType == 2:
         # 获取目标id
         temp = instance.TargetId
         # 获取id
@@ -491,7 +491,7 @@ def Pre_Delete_Agree_Handler(sender,instance,**kwargs):
         target.AgreeCount -= 1
         target.save()
     # 点赞的是评论
-    elif instance._state.adding and instance.AgreeType == 1:
+    elif instance.AgreeType == 1:
         # 获取目标id
         temp = instance.TargetId
         # 查询
