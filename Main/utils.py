@@ -373,7 +373,7 @@ def wrapTheDetail(name, id):
         print("movname",MovName)
         return "浏览了" + MovName + "电影"
         # name.objects.filter()
-    if name == "AgreeRecord":
+    if name == "Agree":
         record = Agree.objects.filter(RecordId=id)[0]
         type = ''
         if record.AgreeType == 1:

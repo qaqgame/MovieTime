@@ -33,6 +33,7 @@ from userControl.views import getUser
 from userControl.views import logout
 from userControl.views import likeType
 from userControl.views import getUserReply
+from userControl.views import AddTag
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -55,5 +56,6 @@ urlpatterns = [
     path('cancelagree',cancelAgree),
     path('loginVerify/',getUser),
     path('logout/',logout),
-    path('liketype/',likeType)
+    path('liketype/',likeType),
+    path("addtag/",AddTag)
 ]
