@@ -26,7 +26,7 @@ distances = distances_r.reshape(21113, 30)
 dic = np.load('movies_dic.npy', allow_pickle=True).item()
 
 # change from 21113 to 2000
-for i in range(20):
+for i in range(21113):
     for j in range(30):
         # print(i, " ", j, " ", movies_index[i], " ", ids[i][j])
         ImportRelation(dic[movies_index[i]], movies_index[i], dic[movies_index[ids[i][j]]], ids[i][j], distances[i][j])
