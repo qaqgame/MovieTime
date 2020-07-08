@@ -453,6 +453,11 @@ def wrapTheDetail(name, id):
             temp['originId'] = targetRecord.UserId
             temp['detail'] = "回复了" + username + "的评论("+targetContent+")" +  "\t" + record.ReplyContent
             return temp
+    temp={}
+    temp['origin']=''
+    temp['originId']=''
+    temp['detail']=None
+    return temp
 
 #包装电影
 def wrapTheMovie(movies):
