@@ -96,10 +96,10 @@ def GetRecommList(ids,count,type):
             realMovs=Movie.objects.filter(MovOriginId=movies_index[int(rec.Movie2Origin)])
             if realMovs.exists():
                 realMov=realMovs[0]
+                # 计算权重
+                power = float(parentPower) / 2
                 # 如果类型满足
                 if realMov.MovType&int(type)!=0:
-                    #计算权重
-                    power=float(parentPower)/2
                     # 如果满足类型，则加入二级列表
                     if (realMov.MovId not in ids) and(realMov not in tempList) and(realMov.MovType&type!=0):
                         t=_getFromQueue(firstQueue,realMov)
