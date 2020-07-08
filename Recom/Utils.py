@@ -20,15 +20,21 @@ def ImportRelation(id1,id1Origin,id2,id2Origin,relation):
     CosRelation.objects.create(Movie1=id1,Movie1Origin=id1Origin,Movie2=id2,Movie2Origin=id2Origin,Relation=relation)
 
 
-def _addToQueue(queue,item):
+def _addToQueue(queue,item,cnt):
     for i in queue:
         if i['item']==item:
-            i['power']+=1
+            i['power']+=cnt
             return
     temp={}
     temp['item']=item
-    temp['power']=1
+    temp['power']=cnt
     queue.append(temp)
+
+def _getFromQueue(queue,item):
+    for i in queue:
+        if i['item']==item:
+            return i
+    return None
 
 # 获得推荐电影列表：电影id，推荐数目,筛选类型
 def GetRecommList(ids,count,type):
@@ -44,14 +50,20 @@ def GetRecommList(ids,count,type):
             realId=mov.MovOriginId
             tempRelation=CosRelation.objects.filter(Movie1Origin=realId)
             if tempRelation.exists():
-                firstQueue.append(mov)
+                tempItm={}
+                tempItm['power']=100.0
+                tempItm['item']=mov
+                firstQueue.append(tempItm)
     else:
         mov = Movie.objects.filter(MovId=ids)[0]
         realId=mov.MovOriginId
         tempRelation = CosRelation.objects.filter(Movie1Origin=realId)
         if not tempRelation.exists():
             return None
-        firstQueue.append(mov)
+        tempItm = {}
+        tempItm['power'] = 100.0
+        tempItm['item'] = mov
+        firstQueue.append(tempItm)
     #
     # #获取原电影数目
     # originCount=tempRecoms.__len__()
@@ -72,11 +84,13 @@ def GetRecommList(ids,count,type):
     print(len(firstQueue))
     size=len(firstQueue)
     #当二级队列足够或一级过长时终止
-    while len(secondQueue)<count*size and len(firstQueue)<size*size*count and len(firstQueue)>0:
-        mov=firstQueue.pop()
+    while len(secondQueue)<count and len(firstQueue)<size*count and len(firstQueue)>0:
+        item=firstQueue.pop()
+        mov=item['item']
         # 获取所有推荐
         allRecomm = CosRelation.objects.filter(Movie1Origin=mov.MovOriginId).order_by('Relation')
         print('get recom:'+str(len(allRecomm)))
+        parentPower=item['power']
         # 加入一级列表
         for rec in allRecomm:
             realMovs=Movie.objects.filter(MovOriginId=movies_index[int(rec.Movie2Origin)])
@@ -84,18 +98,27 @@ def GetRecommList(ids,count,type):
                 realMov=realMovs[0]
                 # 如果类型满足
                 if realMov.MovType&int(type)!=0:
-                    # 如果已存在，则加入二级列表
-                    if (realMov in firstQueue) and (realMov.MovId not in ids) and(realMov not in tempList):
-                        firstQueue.remove(realMov)
-                        _addToQueue(secondQueue,realMov)
+                    #计算权重
+                    power=float(parentPower)/2
+                    # 如果满足类型，则加入二级列表
+                    if (realMov.MovId not in ids) and(realMov not in tempList) and(realMov.MovType&type!=0):
+                        t=_getFromQueue(firstQueue,realMov)
+                        tempPower=power
+                        if  t:
+                            tempPower = t['power'] + power
+                            firstQueue.remove(t)
+                        _addToQueue(secondQueue,realMov,tempPower)
                         tempList.append(realMov)
                         continue
                     elif (realMov in tempList):
-                        _addToQueue(secondQueue,realMov)
+                        _addToQueue(secondQueue,realMov,power)
                         continue
                 print('add')
+                tempItem={}
+                tempItem['power']=power
+                tempItem['item']=realMovs
                 # 否则，直接加入一级列表
-                firstQueue.append(realMov)
+                firstQueue.append(tempItem)
 
     #如果二级列表长度足够
     if len(secondQueue)>=count:
@@ -116,13 +139,13 @@ def GetRecommList(ids,count,type):
         # 随机打乱一级列表
         random.shuffle(firstQueue)
         for i in range(restNum):
-            if firstQueue[i].MovType&int(type)!=0:
-                result.append(firstQueue[i].MovId)
+            if firstQueue[i]['item'].MovType&int(type)!=0:
+                result.append(firstQueue[i]['item'].MovId)
     #如果不存在
     else:
         for i in firstQueue:
-            if i.MovType&int(type)!=0:
-                result.append(i.MovId)
+            if i['item'].MovType&int(type)!=0:
+                result.append(i['item'].MovId)
     return result
 
     #
