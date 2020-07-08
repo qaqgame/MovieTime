@@ -367,47 +367,56 @@ def GetMovImgUrl(MovInstance):
 
 def wrapTheDetail(name, id):
     if(name == 'ViewRecord'):
-        # record = ViewRecord.objects.filter(TargetId=id)[0]
-        MovName = Movie.objects.filter(MovId=id)[0].MovName
+        record = ViewRecord.objects.filter(RecordId=id)[0]
+        print("targetid: ",record.TargetId)
+        MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
+        print("movname",MovName)
         return "浏览了" + MovName + "电影"
         # name.objects.filter()
     if name == "AgreeRecord":
-        record = Agree.objects.filter(TargetId=id)[0]
+        record = Agree.objects.filter(RecordId=id)[0]
         type = ''
         if record.AgreeType == 1:
             type = record.get_AgreeType_display()
-            reply = ReplyRecord.objects.filter(RecordId=id)[0]
+            reply = ReplyRecord.objects.filter(RecordId=record.TargetId)[0]
+            userName=reply.UserId.UserName
             # 点赞了电影评论
             # if reply.ReplyType == 1:
-            type = reply.get_ReplyType_display() + type
             content = reply.ReplyContent
-            return "点赞了" + type + "  " + content
+            return "点赞了 " + userName+" 的评论:" + content
             # else:
             #     type = reply.get_ReplyType_display() + type
             #     content = reply.ReplyContent
             #     return "点赞了"
         # 点赞了标签
         if record.AgreeType == 2:
-            record = Agree.objects.filter(TargetId=id)[0]
+            # record = Agree.objects.filter(RecordId=id)[0]
             type = record.get_AgreeType_display()
-            movTag = MovieTag.objects.filter(MovTagId=id)[0]
-            return "点赞了" + type + "  " + movTag.MovTagCnt
+            tagId,movId=record.TargetId.split('#')
+            movName=Movie.objects.get(MovId=movId).MovName
+            tagName=MovieTag.objects.get(MovTagId=tagId).MovTagCnt
+            return "点赞了 "+movName+" 的标签:" + tagName
     if name == 'EditRecord':
-        record = EditRecord.objects.filter(TargetId=id)[0]
+        record = EditRecord.objects.filter(RecordId=id)[0]
         # 修改信息
         return record.EditContent
     if name == 'FavoriteRecord':
-        record = FavoriteRecord.objects.filter(TargetId=id)[0]
-        MovName = Movie.objects.filter(MovId=id)[0].MovName
+        record = FavoriteRecord.objects.filter(RecordId=id)[0]
+        MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
         return "收藏了" + " 电影 " + MovName
     if name == 'ReplyRecord':
-        record = ReplyRecord.objects.filter(TargetId=id)[0]
+        record = ReplyRecord.objects.filter(RecordId=id)[0]
         # 评论电影
         if record.ReplyType == 1:
-            MovName = Movie.objects.filter(MovId=id)[0].MovName
+            MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
             return "评论了电影 "+ MovName + "\t" + record.ReplyContent
+        else:
+            targetRecord=ReplyRecord.objects.filter(RecordId=record.TargetId)[0]
+            username = targetRecord.UserId.UserName
+            targetContent=targetRecord.ReplyContent
+            return "回复了" + username + "的评论("+targetContent+")" +  "\t" + record.ReplyContent
 
-
+#包装电影
 def wrapTheMovie(movies):
     allmovies = []
     for movie in movies:
@@ -419,6 +428,17 @@ def wrapTheMovie(movies):
         info['extrainfo'] = movie.MovScore
         allmovies.append(info)
     return allmovies
+
+#包装标签
+def wrapTag(tags):
+    result=[]
+    for tag in tags:
+        temp={}
+        temp['tagid']=tag.MovTagId.MovTagId
+        temp['tagcontent']=tag.MovTagId.MovTagCnt
+        temp['agree']=tag.MovTagId.AgreeCount
+        result.append(temp)
+    return result
 
 def GetWrappedReply(replyInstance,userIns):
     temp = {}
@@ -441,9 +461,12 @@ def GetWrappedReply(replyInstance,userIns):
     # 评论时间
     temp['time'] = replyInstance.RecordTime
 
-    # 查询是否点赞
-    tempAg=Agree.objects.filter(TargetId=replyInstance.RecordId,UserId=userIns.UserId)
-    if tempAg.exists():
+    if userIns:
+        # 查询是否点赞
+        tempAg=Agree.objects.filter(TargetId=replyInstance.RecordId,UserId=userIns.UserId)
+    else:
+        tempAg=None
+    if tempAg!=None and tempAg.exists():
         temp['agreed']=True
     else:
         temp['agreed']=False

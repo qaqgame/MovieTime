@@ -6,7 +6,7 @@ import json
 import random
 # Create your views here.
 from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes, ParseMovieRegions, GetFilmList, \
-    RegionList, ToTypeNum, wrapTheMovie, GetReplies, CreateAgree, CancelAgree
+    RegionList, ToTypeNum, wrapTheMovie, GetReplies, CreateAgree, CancelAgree, wrapTag
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
 from Recom.Utils import GetRecommList, GetRecommByType
 
@@ -102,7 +102,8 @@ def UserSpace(request,un):
         userlv=userInstance.UserLevel
         usercur=userInstance.UserCurExp
         usermax=userInstance.UserMaxExp
-        userData={'username':username,'currlevel':userlv,'currexp':usercur,'maxexp':usermax}
+        newUser=not userInstance.HasView
+        userData={'username':username,'currlevel':userlv,'currexp':usercur,'maxexp':usermax,"newuser":newUser}
 
         # 查询该收藏
         favList=models.FavoriteRecord.objects.filter(UserId=userInstance.UserId)
@@ -182,7 +183,7 @@ def ViewRecord(request, un):
             oneMessage['moviename'] = movieName
             oneMessage['extrainfo'] =  movViewTime
             movList.append(oneMessage)
-        movList.sort(key=lambda w:w["extrainfo"])
+        movList.sort(key=lambda w:w["extrainfo"],reverse=True)
         data['histories'] = movList
         res['reason'] = ''
         res['result'] = 'success'
@@ -234,7 +235,12 @@ def movInfo(request, mn):
     # 评分
     movieinfo['rate'] = movInstance.MovScore
     uid = GetUser(request.session.get('user1'))
-    print(uid.UserId)
+
+    # 获取标签
+    tags=MovTagConnection.objects.filter(MovId=movInstance.MovId)
+    tagList=wrapTag(tags)
+    movieinfo['tags']=tagList
+    # print(uid.UserId)
     if not uid:
         ifKeeped = False
     else:
@@ -247,12 +253,13 @@ def movInfo(request, mn):
     movieinfo['ifKeeped'] = ifKeeped
     data['movieinfo'] = movieinfo
     res = wrapTheJson("success", '', data=data)
-    viewRecord=models.ViewRecord.objects.filter(UserId=uid, TargetId=movInstance.MovId)
-    if not viewRecord:
-        models.ViewRecord.objects.create(UserId=uid,TargetId=movInstance.MovId)
-    else:
-        viewRecord[0].RecordTime=datetime.datetime.now()
-        viewRecord[0].save()
+    if uid:
+        viewRecord=models.ViewRecord.objects.filter(UserId=uid, TargetId=movInstance.MovId)
+        if not viewRecord:
+            models.ViewRecord.objects.create(UserId=uid,TargetId=movInstance.MovId)
+        else:
+            viewRecord[0].RecordTime=datetime.datetime.now()
+            viewRecord[0].save()
     return JsonResponse(res)
 
 
@@ -261,16 +268,44 @@ def timeLine(request, un):
     uid = GetUser(un).UserId
     timelines = []
     for sub in models.BaseRecord.__subclasses__():
-        timeline = {}
         messages = sub.objects.filter(UserId=uid)
         if not messages.exists():
             continue
         for message in messages:
+            timeline = {}
+            print(message, sub.__name__)
             timeline['actiontime'] = message.RecordTime
             timeline['title'] = GetTitle(sub.__name__)
-            timeline['detail'] = wrapTheDetail(sub.__name__, message.TargetId)
+            timeline['detail'] = wrapTheDetail(sub.__name__, message.RecordId)
+            if timeline['detail'] == None:
+                continue
             timelines.append(timeline)
-    timelines.sort(key=lambda w:w["actiontime"])
+
+            # 如果是评论，则查询他人对自己的评论及点赞
+            if sub.__name__ == 'ReplyRecord':
+                reply = ReplyRecord.objects.filter(RecordId=message.RecordId)[0]
+                targetMsg = ReplyRecord.objects.filter(TargetId=message.RecordId)
+                if not targetMsg.exists():
+                    continue
+                for tm in targetMsg:
+                    temptl = {}
+                    temptl['actiontime'] = tm.RecordTime
+                    temptl['title'] = GetTitle(sub.__name__)
+                    temptl['detail'] = tm.UserId.UserName + " 评论了你的回复("+reply.ReplyContent+"):" + tm.ReplyContent
+                    timelines.append(temptl)
+
+                #查询点赞
+                targetAgree=Agree.objects.filter(TargetId=message.RecordId)
+                if not targetAgree.exists():
+                    continue
+                for ta in targetAgree:
+                    tempag={}
+                    tempag['actiontime']=ta.RecordTime
+                    tempag['title']=GetTitle('Agree')
+                    tempag['detail']=ta.UserId.UserName+' 点赞了你的评论('+reply.ReplyContent+')'
+                    timelines.append(tempag)
+
+    timelines.sort(key=lambda w:w["actiontime"],reverse=True)
     data = {}
     data['timeline'] = timelines
     res = wrapTheJson("success", "", data=data)
@@ -466,19 +501,50 @@ def getKeep(request, un):
     res = wrapTheJson("success", '', data)
     return JsonResponse(res)
 
+#获取该用户的评论
+def getUserReply(request):
+    username = request.session.get('user1', '')
+    if username == '':
+        res = wrapTheJson('failed', '没有登陆')
+        return JsonResponse(res)
+    userInstance = GetUser(username)
+    replys = models.ReplyRecord.objects.filter(UserId=userInstance.UserId)
+    timelines = []
+    for record in replys:
+        timeline = {}
+        # 评论电影
+        timeline['actiontime'] = record.RecordTime
+        if record.ReplyType == 1:
+            MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
+            str = "评论了电影 " + MovName + ":" +record.ReplyGrade+","+ record.ReplyContent
+        else:
+            #获取评论目标
+            target=ReplyRecord.objects.filter(RecordId=record.TargetId)[0]
+            content=target.ReplyContent
+            username = target.UserId.UserName
+            str = "评论了" + username + "的评论("+content+"):" + record.ReplyContent
+        timeline['detail'] = str
+        timelines.append(timeline)
+    timelines.sort(key=lambda w: w["actiontime"], reverse=True)
+    data = {}
+    data['timeline'] = timelines
+    res = wrapTheJson('success', '', data=data)
+    return JsonResponse(res)
 
 def likeType(request):
     recv_data = json.loads(request.body.decode())  # 解析前端发送的JSON格式的数据
     types = recv_data['choosen']
     username = request.session.get("user1", '')
+    print("session: ",username)
     if username == '':
         res = wrapTheJson("failed", "session中没有用户名")
         return JsonResponse(res)
     userInstance = GetUser(username)
-    if userInstance:
+    if not userInstance:
         res = wrapTheJson("failed", "没有这个用户")
         return JsonResponse(res)
     userInstance.Types = ToTypeNum(types)
+    userInstance.HasView = True
     userInstance.save()
     return JsonResponse(wrapTheJson("success",''))
 

@@ -441,16 +441,7 @@ def _deleteSubReply(replyInstance):
 # 处理评价的删除
 @receiver(pre_delete,sender=ReplyRecord)
 def Pre_Delete_Reply_Handler(sender,instance,**kwargs):
-    # 找到所有
-    replies = ReplyRecord.objects.filter(TargetId=instance.RecordId)
-    if replies.exists():
-        # 先删除子评论
-        for r in replies:
-            _deleteSubReply(r)
-
-    #  删除相应的点赞信
-    agrees=Agree.objects.filter(TargetId=instance.RecordId)
-    agrees.delete()
+    _deleteSubReply(instance)
 
 # 处理浏览记录创建
 @receiver(pre_save,sender=ViewRecord)
