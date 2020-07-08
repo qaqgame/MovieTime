@@ -74,7 +74,7 @@ def GetRecommList(ids,count,type):
         # 加入一级列表
         for rec in allRecomm:
             realMovs=Movie.objects.filter(MovOriginId=rec.Movie2Origin)
-            print(rec.Movie2Origin)
+            print(rec.Movie2Origin+',mov:'+rec.Movie2)
             if realMovs.exists():
                 realMov=realMovs[0]
                 # 如果类型满足
