@@ -367,16 +367,16 @@ def GetMovImgUrl(MovInstance):
 
 def wrapTheDetail(name, id):
     if(name == 'ViewRecord'):
-        # record = ViewRecord.objects.filter(TargetId=id)[0]
-        MovName = Movie.objects.filter(MovId=id)[0].MovName
+        record = ViewRecord.objects.filter(RecordId=id)[0]
+        MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
         return "浏览了" + MovName + "电影"
         # name.objects.filter()
     if name == "AgreeRecord":
-        record = Agree.objects.filter(TargetId=id)[0]
+        record = Agree.objects.filter(RecordId=id)[0]
         type = ''
         if record.AgreeType == 1:
             type = record.get_AgreeType_display()
-            reply = ReplyRecord.objects.filter(RecordId=id)[0]
+            reply = ReplyRecord.objects.filter(RecordId=record.TargetId)[0]
             # 点赞了电影评论
             # if reply.ReplyType == 1:
             type = reply.get_ReplyType_display() + type
@@ -388,9 +388,9 @@ def wrapTheDetail(name, id):
             #     return "点赞了"
         # 点赞了标签
         if record.AgreeType == 2:
-            record = Agree.objects.filter(RecordId=id)[0]
+            # record = Agree.objects.filter(RecordId=id)[0]
             type = record.get_AgreeType_display()
-            movTag = MovieTag.objects.filter(MovTagId=id)[0]
+            movTag = MovieTag.objects.filter(MovTagId=record.TargetId)[0]
             return "点赞了" + type + "  " + movTag.MovTagCnt
     if name == 'EditRecord':
         record = EditRecord.objects.filter(RecordId=id)[0]
@@ -398,19 +398,16 @@ def wrapTheDetail(name, id):
         return record.EditContent
     if name == 'FavoriteRecord':
         record = FavoriteRecord.objects.filter(RecordId=id)[0]
-        MovName = Movie.objects.filter(MovId=id)[0].MovName
+        MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
         return "收藏了" + " 电影 " + MovName
     if name == 'ReplyRecord':
-        record = ReplyRecord.objects.filter(RecordId=id)
-        if not record.exists():
-            return None
-        record = record[0]
+        record = ReplyRecord.objects.filter(RecordId=id)[0]
         # 评论电影
         if record.ReplyType == 1:
-            MovName = Movie.objects.filter(MovId=id)[0].MovName
+            MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
             return "评论了电影 "+ MovName + "\t" + record.ReplyContent
         else:
-            username = User.objects.filter(UserId=record.UserId)[0].UserName
+            username = User.objects.filter(UserId=record.TargetId)[0].UserName
             return "评论了" + username + "的评论" +  "\t" + record.ReplyContent
 
 

@@ -234,7 +234,7 @@ def movInfo(request, mn):
     # 评分
     movieinfo['rate'] = movInstance.MovScore
     uid = GetUser(request.session.get('user1'))
-    print(uid.UserId)
+    # print(uid.UserId)
     if not uid:
         ifKeeped = False
     else:
@@ -247,7 +247,7 @@ def movInfo(request, mn):
     movieinfo['ifKeeped'] = ifKeeped
     data['movieinfo'] = movieinfo
     res = wrapTheJson("success", '', data=data)
-    if not uid:
+    if uid:
         viewRecord=models.ViewRecord.objects.filter(UserId=uid, TargetId=movInstance.MovId)
         if not viewRecord:
             models.ViewRecord.objects.create(UserId=uid,TargetId=movInstance.MovId)
@@ -269,7 +269,7 @@ def timeLine(request, un):
         for message in messages:
             timeline['actiontime'] = message.RecordTime
             timeline['title'] = GetTitle(sub.__name__)
-            timeline['detail'] = wrapTheDetail(sub.__name__, message.TargetId)
+            timeline['detail'] = wrapTheDetail(sub.__name__, message.RecordId)
             if timeline['detail'] == None:
                 continue
             timelines.append(timeline)
