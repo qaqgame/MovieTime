@@ -76,7 +76,7 @@ def GetRecommList(ids,count,type):
         print('get recom:'+str(len(allRecomm)))
         # 加入一级列表
         for rec in allRecomm:
-            realMovs=Movie.objects.filter(MovOriginId=rec.Movie2Origin)
+            realMovs = Movie.objects.filter(MovOriginId=movies_index[rec.Movie2Origin])
             print(rec.Movie2Origin+',mov:'+rec.Movie2)
             tttm=Movie.objects.filter(MovId=rec.Movie2)[0]
             print('2mov:'+tttm.MovOriginId)
