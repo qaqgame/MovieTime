@@ -568,13 +568,20 @@ def getUserReply(request,un):
         # 评论电影
         timeline['actiontime'] = record.RecordTime
         if record.ReplyType == 1:
-            MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
+            MovIns = Movie.objects.filter(MovId=record.TargetId)[0]
+            MovName=MovIns.MovName
+            Movid=MovIns.MovId
+            timeline['origin']=MovName
+            timeline['originid']=Movid
             str1 = "评论了电影 " + MovName + ":" +str(record.ReplyGrade)+","+ record.ReplyContent
         else:
             #获取评论目标
             target=ReplyRecord.objects.filter(RecordId=record.TargetId)[0]
             content=target.ReplyContent
             username = target.UserId.UserName
+            uid=target.UserId.UserId
+            timeline['origin']=username
+            timeline['originid']=uid
             str1 = "评论了" + username + "的评论("+content+"):" + record.ReplyContent
         timeline['detail'] = str1
         timelines.append(timeline)

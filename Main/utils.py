@@ -511,6 +511,8 @@ def GetWrappedReply(replyInstance,userIns):
     if replyInstance.ReplyType == 1:
         temp['score'] = replyInstance.ReplyGrade
     else:
+        targetReply=ReplyRecord.objects.get(RecordId=replyInstance.TargetId)
+        temp['target']=targetReply.UserId.UserName
         temp['score'] = 0
     # 评论时间
     temp['time'] = replyInstance.RecordTime
