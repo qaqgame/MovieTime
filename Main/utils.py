@@ -146,6 +146,15 @@ def ImportMovie(title,typeList,length,origin,company,director,content,tagList,ac
                 actConn.save()
     print('import movie:',movieInstance.MovId," ",title)
 
+def AddUserExp(user,cnt):
+    # 添加经验
+    user.UserCurExp += cnt
+    if user.UserCurExp >= user.UserMaxExp:
+        user.UserCurExp = 0
+        user.UserMaxExp += 50
+        user.UserLevel += 1
+    user.save()
+
 def ImportActor(actorName,sex,area):
     sexNo=GetNoOfSex(sex)
     instance=Actor.objects.create(ActorName=actorName,ActorSex=sexNo,ActorArea=area)
