@@ -6,7 +6,7 @@ import json
 import random
 # Create your views here.
 from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes, ParseMovieRegions, GetFilmList, \
-    RegionList, ToTypeNum, wrapTheMovie
+    RegionList, ToTypeNum, wrapTheMovie, GetReplies, CreateAgree, CancelAgree, wrapTag
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
 from Recom.Utils import GetRecommList, GetRecommByType
 
@@ -41,7 +41,7 @@ def login(request):
 
 def logout(request):
     request.session.flush()
-    return redirect('/login/')
+    return JsonResponse({'result': 'success', 'reason': '','data':{'target':'/'}})
 
 
 def index(request):
@@ -50,6 +50,18 @@ def index(request):
         return JsonResponse({'hasSes': 'false', 'next': '/ses_index/'})
     else:
         return render(request, 's_index.html')
+
+
+def getUser(request):
+    status = request.session.get('is_login')
+    if not status:
+        return JsonResponse({'result':'failed','reason':'','data':{'user': '前往登录', 'link': '/'}})
+    else:
+        username = request.session.get('user1')
+        if not username:
+            return JsonResponse({'result':'failed','reason':'','data':{'user': '前往登录', 'link': '/'}})
+        else:
+            return JsonResponse({'result':'success','reason':'','data':{'user': username, 'link': '/user/'+username}})
 
 
 def signup(request):
@@ -90,7 +102,8 @@ def UserSpace(request,un):
         userlv=userInstance.UserLevel
         usercur=userInstance.UserCurExp
         usermax=userInstance.UserMaxExp
-        userData={'username':username,'currlevel':userlv,'currexp':usercur,'maxexp':usermax}
+        newUser=not userInstance.HasView
+        userData={'username':username,'currlevel':userlv,'currexp':usercur,'maxexp':usermax,"newuser":newUser}
 
         # 查询该收藏
         favList=models.FavoriteRecord.objects.filter(UserId=userInstance.UserId)
@@ -170,7 +183,7 @@ def ViewRecord(request, un):
             oneMessage['moviename'] = movieName
             oneMessage['extrainfo'] =  movViewTime
             movList.append(oneMessage)
-        movList.sort(key=lambda w:w["extrainfo"])
+        movList.sort(key=lambda w:w["extrainfo"],reverse=True)
         data['histories'] = movList
         res['reason'] = ''
         res['result'] = 'success'
@@ -222,21 +235,31 @@ def movInfo(request, mn):
     # 评分
     movieinfo['rate'] = movInstance.MovScore
     uid = GetUser(request.session.get('user1'))
-    print(uid.UserId)
+
+    # 获取标签
+    tags=MovTagConnection.objects.filter(MovId=movInstance.MovId)
+    tagList=wrapTag(tags)
+    movieinfo['tags']=tagList
+    # print(uid.UserId)
     if not uid:
-        ifKeeped = 'false'
+        ifKeeped = False
     else:
         # uid = GetUser(uname)
         fav = models.FavoriteRecord.objects.filter(UserId=uid, TargetId=movInstance.MovId)
         if not fav:
-            ifKeeped = 'false'
+            ifKeeped = False
         else:
-            ifKeeped = 'true'
+            ifKeeped = True
     movieinfo['ifKeeped'] = ifKeeped
-
     data['movieinfo'] = movieinfo
     res = wrapTheJson("success", '', data=data)
-    models.ViewRecord.objects.create(UserId=uid, TargetId=movInstance.MovId)
+    if uid:
+        viewRecord=models.ViewRecord.objects.filter(UserId=uid, TargetId=movInstance.MovId)
+        if not viewRecord:
+            models.ViewRecord.objects.create(UserId=uid,TargetId=movInstance.MovId)
+        else:
+            viewRecord[0].RecordTime=datetime.datetime.now()
+            viewRecord[0].save()
     return JsonResponse(res)
 
 
@@ -245,16 +268,44 @@ def timeLine(request, un):
     uid = GetUser(un).UserId
     timelines = []
     for sub in models.BaseRecord.__subclasses__():
-        timeline = {}
         messages = sub.objects.filter(UserId=uid)
         if not messages.exists():
             continue
         for message in messages:
+            timeline = {}
+            print(message, sub.__name__)
             timeline['actiontime'] = message.RecordTime
             timeline['title'] = GetTitle(sub.__name__)
-            timeline['detail'] = wrapTheDetail(sub.__name__, message.TargetId)
+            timeline['detail'] = wrapTheDetail(sub.__name__, message.RecordId)
+            if timeline['detail'] == None:
+                continue
             timelines.append(timeline)
-    timelines.sort(key=lambda w:w["actiontime"])
+
+            # 如果是评论，则查询他人对自己的评论及点赞
+            if sub.__name__ == 'ReplyRecord':
+                reply = ReplyRecord.objects.filter(RecordId=message.RecordId)[0]
+                targetMsg = ReplyRecord.objects.filter(TargetId=message.RecordId)
+                if not targetMsg.exists():
+                    continue
+                for tm in targetMsg:
+                    temptl = {}
+                    temptl['actiontime'] = tm.RecordTime
+                    temptl['title'] = GetTitle(sub.__name__)
+                    temptl['detail'] = tm.UserId.UserName + " 评论了你的回复("+reply.ReplyContent+"):" + tm.ReplyContent
+                    timelines.append(temptl)
+
+                #查询点赞
+                targetAgree=Agree.objects.filter(TargetId=message.RecordId)
+                if not targetAgree.exists():
+                    continue
+                for ta in targetAgree:
+                    tempag={}
+                    tempag['actiontime']=ta.RecordTime
+                    tempag['title']=GetTitle('Agree')
+                    tempag['detail']=ta.UserId.UserName+' 点赞了你的评论('+reply.ReplyContent+')'
+                    timelines.append(tempag)
+
+    timelines.sort(key=lambda w:w["actiontime"],reverse=True)
     data = {}
     data['timeline'] = timelines
     res = wrapTheJson("success", "", data=data)
@@ -274,13 +325,13 @@ def ShowMoviePage(request):
 def search(request):
     type = request.GET.get('type', -1)
     # 生成type
-    if type==-1:
+    if int(type)==-1:
         typeList=(~(1<<30))
     else:
         typeList=(1<<int(type))
     field = request.GET.get('field', -1)
     # 生成区域
-    if field==-1:
+    if int(field)   ==-1:
         regionList=(~(1<<5))
     else:
         regionList=(1<<int(field))
@@ -314,6 +365,102 @@ def search(request):
     res = wrapTheJson("success", "", data=data)
     return JsonResponse(res)
 
+# 点赞
+def agree(request):
+    target=request.GET.get('target','')
+    movName = request.GET.get('movname', '')
+    movId = request.GET.get('movid', '')
+    if movId=='' and movName!='':
+        movInss=Movie.objects.filter(MovName=movName)
+        if not movInss.exists():
+            res=wrapTheJson('failed','无法找到该电影')
+            return JsonResponse(res)
+        movIns=movInss[0]
+        movId=movIns.MovId
+    elif movId=='' and movName=='':
+        movId=None
+
+    # 获取点赞目标类型,构造targetid
+    tempType = request.GET.get('type', 'Reply')
+    if tempType == 'Reply':
+        agreeType = 1
+        targetId = target
+    #如果是标签
+    else:
+        agreeType = 2
+        tag=MovieTag.objects.filter(MovTagCnt=target)
+        if not tag.exists():
+            res = wrapTheJson('failed', '无法找到该标签')
+            return JsonResponse(res)
+        tagId=tag
+        targetId=tagId
+
+    # 获取用户
+    username = request.session.get('user1', '')
+    userInstance = GetUser(username)
+    if not userInstance:
+        res = wrapTheJson('failed', '无法找到该用户')
+        return JsonResponse(res)
+
+    try:
+        result=CreateAgree(userInstance,targetId,agreeType,movId)
+    except Exception as e:
+        res=wrapTheJson('failed',e.__str__())
+        return JsonResponse(res)
+    finally:
+        data={}
+        data['agreecount']=result
+        res=wrapTheJson('success','',data)
+        return JsonResponse(res)
+
+#取消点赞
+def cancelAgree(request):
+    target = request.GET.get('target', '')
+    movName = request.GET.get('movname', '')
+    movId = request.GET.get('movid', '')
+    if movId == '' and movName != '':
+        movInss = Movie.objects.filter(MovName=movName)
+        if not movInss.exists():
+            res = wrapTheJson('failed', '无法找到该电影')
+            return JsonResponse(res)
+        movIns = movInss[0]
+        movId = movIns.MovId
+    elif movId == '' and movName == '':
+        movId = None
+
+    # 获取点赞目标类型,构造targetid
+    tempType = request.GET.get('type', 'Reply')
+    if tempType == 'Reply':
+        agreeType = 1
+        targetId = target
+    # 如果是标签
+    else:
+        agreeType = 2
+        tag = MovieTag.objects.filter(MovTagCnt=target)
+        if not tag.exists():
+            res = wrapTheJson('failed', '无法找到该标签')
+            return JsonResponse(res)
+        tagId = tag
+        targetId = tagId
+
+    # 获取用户
+    username = request.session.get('user1', '')
+    userInstance = GetUser(username)
+    if not userInstance:
+        res = wrapTheJson('failed', '无法找到该用户')
+        return JsonResponse(res)
+
+    try:
+        result=CancelAgree(userInstance,targetId,agreeType,movId)
+    except Exception as e:
+        res=wrapTheJson('failed',e.__str__())
+        return JsonResponse(res)
+    finally:
+        data={}
+        data['agreecount']=result
+        res=wrapTheJson('success','',data)
+        return JsonResponse(res)
+
 
 def keep(request):
     moviename = request.GET.get("moviename", '')
@@ -344,8 +491,8 @@ def getKeep(request, un):
         message = {}
         favId = favMovie.TargetId
         movie = models.Movie.objects.filter(MovId=favId)[0]
-        if not movie.exists():
-            continue
+        # if not movie:
+        #     continue
         message['movieimgurl'] = GetMovImgUrl(movie)
         message['moviename'] = movie.MovName
         message['extrainfo'] = favMovie.RecordTime
@@ -354,19 +501,50 @@ def getKeep(request, un):
     res = wrapTheJson("success", '', data)
     return JsonResponse(res)
 
+#获取该用户的评论
+def getUserReply(request):
+    username = request.session.get('user1', '')
+    if username == '':
+        res = wrapTheJson('failed', '没有登陆')
+        return JsonResponse(res)
+    userInstance = GetUser(username)
+    replys = models.ReplyRecord.objects.filter(UserId=userInstance.UserId)
+    timelines = []
+    for record in replys:
+        timeline = {}
+        # 评论电影
+        timeline['actiontime'] = record.RecordTime
+        if record.ReplyType == 1:
+            MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
+            str = "评论了电影 " + MovName + ":" +record.ReplyGrade+","+ record.ReplyContent
+        else:
+            #获取评论目标
+            target=ReplyRecord.objects.filter(RecordId=record.TargetId)[0]
+            content=target.ReplyContent
+            username = target.UserId.UserName
+            str = "评论了" + username + "的评论("+content+"):" + record.ReplyContent
+        timeline['detail'] = str
+        timelines.append(timeline)
+    timelines.sort(key=lambda w: w["actiontime"], reverse=True)
+    data = {}
+    data['timeline'] = timelines
+    res = wrapTheJson('success', '', data=data)
+    return JsonResponse(res)
 
 def likeType(request):
     recv_data = json.loads(request.body.decode())  # 解析前端发送的JSON格式的数据
     types = recv_data['choosen']
     username = request.session.get("user1", '')
+    print("session: ",username)
     if username == '':
         res = wrapTheJson("failed", "session中没有用户名")
         return JsonResponse(res)
     userInstance = GetUser(username)
-    if userInstance:
+    if not userInstance:
         res = wrapTheJson("failed", "没有这个用户")
         return JsonResponse(res)
     userInstance.Types = ToTypeNum(types)
+    userInstance.HasView = True
     userInstance.save()
     return JsonResponse(wrapTheJson("success",''))
 
@@ -378,6 +556,43 @@ def GetRecByIds(movids,type,count):
     for recmovie in Recmovieids:
         Recmovies.append(GetFilm(recmovie))
     return Recmovies
+
+#获取评论
+def GetReply(request):
+    movName=request.GET.get('movname','')
+    movId=request.GET.get('movid','')
+    startIdx=int(request.GET.get('start',0))
+    count=int(request.GET.get('count',20))
+
+    username = request.session.get('user1', '')
+    userInstance = GetUser(username)
+    if movId=='':
+        movInss=Movie.objects.filter(MovName=movName)
+        if not movInss.exists():
+            res=wrapTheJson('failed','无法找到该电影')
+            return JsonResponse(res)
+        movIns=movInss[0]
+        movId=movIns.MovId
+    try:
+        result=GetReplies(movId,userInstance)
+    except Exception as e:
+        res=wrapTheJson('failed',e.__str__())
+        return JsonResponse(res)
+    finally:
+        data={}
+        data['count']=len(result)
+        if len(result)<=startIdx+count:
+            data['replylist'] = result[startIdx:]
+        else:
+            data['replylist']=result[startIdx:startIdx+count]
+        res=wrapTheJson('success','',data)
+        return JsonResponse(res)
+
+def getWrappedRecommand(ids,type,count):
+    result=(wrapTheMovie(GetRecByIds(movids=ids,type=type,count=count)))
+    if not result:
+        result=wrapTheMovie(GetRecommByType(type,count))
+    return result
 
 def getRec(request):
     username = request.session.get("user1", '')
@@ -410,92 +625,56 @@ def getRec(request):
         movids = []
         for favRecord in favRecords:
             movids.append(favRecord.TargetId)
-        defaultAllType=~(1<<30)
-        # #收藏电影数小于20时
-        # if len(movids) < 20:
-        #     # 计算每部收藏电影所获取的推荐数
-        #     num = 200 / len(movids)
-        #     for movid in movids:
-        #         Recmovieids = GetRecommList(id=movid, count=num,type=defaultAllType)
-        #     for recmovie in Recmovieids:
-        #         Recmovies.append(recmovie)
-        # else:
-        #     for i in range(20):
-        #         Recmovieids = GetRecommList(movids[i], 10)
-        #     for recmovid in Recmovieids:
-        #         Recmovies.append(GetFilm(recmovid))
-        # Recmovies_wrap = wrapTheMovie(Recmovies)
-        # alltypemovies = []
-        testP1 = GetRecByIds(movids=movids,type=defaultAllType,count=20)
-        print("testP1",testP1.__len__())
-        allmovies.append(wrapTheMovie(GetRecByIds(movids=movids,type=defaultAllType,count=20)))
+        if len(movids)>0:
+            defaultAllType=~(1<<30)
+            testP1 = GetRecByIds(movids=movids,type=defaultAllType,count=20)
+            print("testP1",testP1.__len__())
+            allmovies = getWrappedRecommand(movids,defaultAllType,20)
 
-        comics.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<2),count=20)))
-        crimes.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<4),count=20)))
-        threats.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<7),count=20)))
-        fictions.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<9),count=20)))
-        jingsongs.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<10),count=20)))
-        loves.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<11),count=20)))
-        actions.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<15),count=20)))
-        wests.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<18),count=20)))
-        musics.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<12),count=20)))
-        disasters.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<23),count=20)))
-        xijvs.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<27),count=20)))
-        jvqings.append(wrapTheMovie(GetRecByIds(movids=movids,type=(1<<29),count=20)))
-        # for i in range(20):
-        #     alltypemovies.append(Recmovies_wrap[random.randint(0, len(Recmovies_wrap))])
-        # for index, movie in Recmovies:
-        #     types = movie.MovType
-        #     if types&(1<<2)!=0:
-        #         if(len(comics)<=20):
-        #             comics.append(Recmovies_wrap[index])
-        #     if types&(1<<4)!=0 :
-        #         if(len(crimes)<=20):
-        #             crimes.append(Recmovies_wrap[index])
-        #     if types&(1<<7)!=0:
-        #         if(len(threats)<=20):
-        #             threats.append(Recmovies_wrap[index])
-        #     if types&(1<<9)!=0:
-        #         if(len(fictions)<=20):
-        #             fictions.append(Recmovies_wrap[index])
-        #     if types&(1<<10)!=0:
-        #         if(len(jingsongs)<=20):
-        #             jingsongs.append(Recmovies_wrap[index])
-        #     if types&(1<<11)!=0:
-        #         if(len(loves)<=20):
-        #             loves.append(Recmovies_wrap[index])
-        #     if types&(1<<15)!=0:
-        #         if(len(actions)<=20):
-        #             actions.append(Recmovies_wrap[index])
-        #     if types&(1<<18)!=0:
-        #         if(len(wests)<=20):
-        #             wests.append(Recmovies_wrap[index])
-        #     if types&(1<<12)!=0:
-        #         if(len(musics)<=20):
-        #             musics.append(Recmovies_wrap[index])
-        #     if types&(1<<23)!=0:
-        #         if(len(disasters)<=20):
-        #             disasters.append(Recmovies_wrap[index])
-        #     if types&(1<<27)!=0:
-        #         if(len(xijvs)<=20):
-        #             xijvs.append(Recmovies_wrap[index])
-        #     if types&(1<<29)!=0:
-        #         if(len(jvqings)<=20):
-        #             jvqings.append(Recmovies_wrap[index])
-    else:
-        comics = wrapTheMovie(GetRecommByType(1<<2,20))
-        crimes = wrapTheMovie(GetRecommByType(1<<4,20))
-        threats = wrapTheMovie(GetRecommByType(1<<7,20))
-        fictions = wrapTheMovie(GetRecommByType(1<<9,20))
-        jingsongs = wrapTheMovie(GetRecommByType(1<<10,20))
-        loves = wrapTheMovie(GetRecommByType(1<<11,20))
-        actions = wrapTheMovie(GetRecommByType(1<<15,20))
-        wests = wrapTheMovie(GetRecommByType(1<<18,20))
-        musics = wrapTheMovie(GetRecommByType(1<<12,20))
-        disasters = wrapTheMovie(GetRecommByType(1<<23,20))
-        xijvs = wrapTheMovie(GetRecommByType(1<<27,20))
-        jvqings = wrapTheMovie(GetRecommByType(1<<29,20))
-        allmovies.append(wrapTheMovie(GetRecommByType(userInstance.Types,20)))
+            comics = (getWrappedRecommand(ids=movids,type=(1<<2),count=20))
+            crimes=(getWrappedRecommand(ids=movids,type=(1<<4),count=20))
+            threats=(getWrappedRecommand(ids=movids,type=(1<<7),count=20))
+            fictions=(getWrappedRecommand(ids=movids,type=(1<<9),count=20))
+            jingsongs=getWrappedRecommand(ids=movids,type=(1<<10),count=20)
+            loves=getWrappedRecommand(ids=movids,type=(1<<11),count=20)
+            actions=getWrappedRecommand(ids=movids,type=(1<<15),count=20)
+            wests=getWrappedRecommand(ids=movids,type=(1<<18),count=20)
+            musics=getWrappedRecommand(ids=movids,type=(1<<12),count=20)
+            disasters=getWrappedRecommand(ids=movids,type=(1<<23),count=20)
+            xijvs=getWrappedRecommand(ids=movids,type=(1<<27),count=20)
+            jvqings=getWrappedRecommand(ids=movids,type=(1<<29),count=20)
+
+            data = {}
+            data['movietypes'] = ['动画', '犯罪', '恐怖', '科幻', '惊悚', '爱情', '动作', '西部', '音乐', '灾难', '喜剧', '剧情']
+            data['alltypemovie'] = allmovies
+            data['动画'] = comics
+            data['犯罪'] = crimes
+            data['恐怖'] = threats
+            data['科幻'] = fictions
+            data['惊悚'] = jingsongs
+            data['爱情'] = loves
+            data['动作'] = actions
+            data['西部'] = wests
+            data['音乐'] = musics
+            data['灾难'] = disasters
+            data['喜剧'] = xijvs
+            data['剧情'] = jvqings
+            res = wrapTheJson("success", '', data=data)
+            return JsonResponse(res)
+
+    comics = wrapTheMovie(GetRecommByType(1<<2,20))
+    crimes = wrapTheMovie(GetRecommByType(1<<4,20))
+    threats = wrapTheMovie(GetRecommByType(1<<7,20))
+    fictions = wrapTheMovie(GetRecommByType(1<<9,20))
+    jingsongs = wrapTheMovie(GetRecommByType(1<<10,20))
+    loves = wrapTheMovie(GetRecommByType(1<<11,20))
+    actions = wrapTheMovie(GetRecommByType(1<<15,20))
+    wests = wrapTheMovie(GetRecommByType(1<<18,20))
+    musics = wrapTheMovie(GetRecommByType(1<<12,20))
+    disasters = wrapTheMovie(GetRecommByType(1<<23,20))
+    xijvs = wrapTheMovie(GetRecommByType(1<<27,20))
+    jvqings = wrapTheMovie(GetRecommByType(1<<29,20))
+    allmovies=(wrapTheMovie(GetRecommByType(userInstance.Types,20)))
 
     data = {}
     data['movietypes'] = ['动画', '犯罪', '恐怖', '科幻', '惊悚', '爱情', '动作', '西部', '音乐', '灾难', '喜剧', '剧情']
@@ -516,3 +695,48 @@ def getRec(request):
     return JsonResponse(res)
 
 
+# 创建评论
+def createReply(request):
+    recv_data = json.loads(request.body.decode())  # 解析前端发送的JSON格式的数据
+    type = recv_data['type']
+    content = recv_data['content']
+    username = request.session.get('user1', '')
+    userInstance = GetUser(username)
+    uid = userInstance.UserId
+    if(recv_data['type'] == "movie"):
+        grade = recv_data['grade']
+        moviename = recv_data['moviename']
+        movid = models.Movie.objects.filter(MovName=moviename)[0].MovId
+        reply=models.ReplyRecord.objects.create(UserId=userInstance, TargetId=movid, ReplyType=1, ReplyGrade=grade, ReplyContent=content)
+        # reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=movid, ReplyType=1, ReplyGrade=grade, ReplyContent=content).order_by("-RecordTime")[0]
+
+        result=GetReplies(movid,userInstance)
+        print(reply)
+        data = {}
+        data['name'] = username
+        data['content'] = content
+        data['agree']=reply.AgreeCount
+        data['score'] = grade
+        data['time'] = reply.RecordTime
+        data['replyid'] = reply.RecordId
+        data['reply'] = []
+        data['count']=len(result)
+        res = wrapTheJson('success', '', data)
+    else:
+        print(type)
+        replyid = recv_data['replyid']
+        moviename=recv_data['moviename']
+        movid = models.Movie.objects.filter(MovName=moviename)[0].MovId
+        reply=models.ReplyRecord.objects.create(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content)
+        #reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content).order_by("-RecordTime")[0]
+        print(reply)
+        data = {}
+        data['name'] = username
+        data['content'] = content
+        data['agree']=reply.AgreeCount
+        data['time'] = reply.RecordTime
+        data['replyid'] = reply.RecordId
+        data['reply'] = []
+        data['count']=0
+        res = wrapTheJson('success', '', data)
+    return JsonResponse(res)
