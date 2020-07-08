@@ -59,10 +59,11 @@ def getUser(request):
         return JsonResponse({'result':'failed','reason':'','data':{'user': '前往登录', 'link': '/'}})
     else:
         username = request.session.get('user1')
-        if not username:
+        level = request.session.get('level')
+        if not username or not level:
             return JsonResponse({'result':'failed','reason':'','data':{'user': '前往登录', 'link': '/'}})
         else:
-            return JsonResponse({'result':'success','reason':'','data':{'user': username, 'link': '/user/'+username}})
+            return JsonResponse({'result':'success','reason':'','data':{'user': username, 'link': '/user/'+username, 'level': level}})
 
 
 def signup(request):
