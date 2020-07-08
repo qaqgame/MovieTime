@@ -210,6 +210,6 @@ def GetRecommByType(type,count,user):
             #检索不在收藏中的电影
             favRec=FavoriteRecord.objects.filter(UserId=user,TargetId=mov.MovId)
             if not favRec.exists():
-                result.append(favRec)
+                result.append(mov)
         cnt+=3*count
     return result
