@@ -378,9 +378,15 @@ def wrapTheDetail(name, id):
     if(name == 'ViewRecord'):
         record = ViewRecord.objects.filter(RecordId=id)[0]
         print("targetid: ",record.TargetId)
-        MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
+        Movins=Movie.objects.filter(MovId=record.TargetId)[0]
+        MovName = Movins.MovName
+        Movid=Movins.MovId
         print("movname",MovName)
-        return "浏览了" + MovName + "电影"
+        temp={}
+        temp['origin']=MovName
+        temp['originId']=Movid
+        temp['detail']="浏览了" + MovName + "电影"
+        return temp
         # name.objects.filter()
     if name == "AgreeRecord":
         record = Agree.objects.filter(RecordId=id)[0]
@@ -389,10 +395,15 @@ def wrapTheDetail(name, id):
             type = record.get_AgreeType_display()
             reply = ReplyRecord.objects.filter(RecordId=record.TargetId)[0]
             userName=reply.UserId.UserName
+            uid=reply.UserId.UserId
             # 点赞了电影评论
             # if reply.ReplyType == 1:
             content = reply.ReplyContent
-            return "点赞了 " + userName+" 的评论:" + content
+            temp = {}
+            temp['origin'] = userName
+            temp['originId'] = uid
+            temp['detail'] = "点赞了 " + userName+" 的评论:" + content
+            return temp
             # else:
             #     type = reply.get_ReplyType_display() + type
             #     content = reply.ReplyContent
@@ -404,26 +415,43 @@ def wrapTheDetail(name, id):
             tagId,movId=record.TargetId.split('#')
             movName=Movie.objects.get(MovId=movId).MovName
             tagName=MovieTag.objects.get(MovTagId=tagId).MovTagCnt
-            return "点赞了 "+movName+" 的标签:" + tagName
+            temp={}
+            temp['origin']=''
+            temp['originId']=''
+            temp['detail']="点赞了 "+movName+" 的标签:" + tagName
+            return temp
     if name == 'EditRecord':
         record = EditRecord.objects.filter(RecordId=id)[0]
         # 修改信息
         return record.EditContent
     if name == 'FavoriteRecord':
         record = FavoriteRecord.objects.filter(RecordId=id)[0]
-        MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
-        return "收藏了" + " 电影 " + MovName
+        Movins = Movie.objects.filter(MovId=record.TargetId)[0]
+        MovName = Movins.MovName
+        Movid = Movins.MovId
+        temp = {}
+        temp['origin'] = MovName
+        temp['originId'] = Movid
+        temp['detail'] = "浏览了" + MovName + "电影"
     if name == 'ReplyRecord':
         record = ReplyRecord.objects.filter(RecordId=id)[0]
         # 评论电影
         if record.ReplyType == 1:
             MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
-            return "评论了电影 "+ MovName + "\t" + record.ReplyContent
+            temp = {}
+            temp['origin'] = ''
+            temp['originId'] = ''
+            temp['detail'] = "评论了电影 "+ MovName + "\t" + record.ReplyContent
+            return temp
         else:
             targetRecord=ReplyRecord.objects.filter(RecordId=record.TargetId)[0]
             username = targetRecord.UserId.UserName
             targetContent=targetRecord.ReplyContent
-            return "回复了" + username + "的评论("+targetContent+")" +  "\t" + record.ReplyContent
+            temp = {}
+            temp['origin'] = username
+            temp['originId'] = targetRecord.UserId
+            temp['detail'] = "回复了" + username + "的评论("+targetContent+")" +  "\t" + record.ReplyContent
+            return temp
 
 #包装电影
 def wrapTheMovie(movies):
