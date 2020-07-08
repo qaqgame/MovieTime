@@ -53,7 +53,11 @@ def GetRecommList(ids,count,type):
             tempRelation = CosRelation.objects.filter(Movie1Origin=realId)
             rlist = list(tempRelation)
             random.shuffle(rlist)
-            final.extend(rlist[:num])
+            result=[]
+            for r in rlist:
+                t=Movie.objects.filter(MovOriginId=movies_index[int(r.Movie2Origin)])[0]
+                result.append(t.MovId)
+            final.extend(result[:num])
         return final[:count]
 
     else:
