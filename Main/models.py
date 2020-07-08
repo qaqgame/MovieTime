@@ -170,7 +170,7 @@ class UserManager(models.Manager):
         instance.save()
         uId = 'Uid' + str(cnt)
         kwargs['UserId']=uId
-        super(UserManager, self).create(*args, **kwargs)
+        return super(UserManager, self).create(*args, **kwargs)
 # 用户
 class User(models.Model):
     # 用户id
@@ -212,7 +212,7 @@ class BaseRecord(models.Model):
     # 记录目标
     TargetId=models.CharField(max_length=50, verbose_name='目标id')
     # 记录时间
-    RecordTime=models.DateTimeField(auto_now_add=True)
+    RecordTime=models.DateTimeField(auto_now_add=True,editable=True)
 
     class Meta:
         abstract=True
@@ -234,7 +234,7 @@ class ViewManager(models.Manager):
         instance.save()
         uId = 'View' + str(cnt)
         kwargs['RecordId']=uId
-        super(ViewManager, self).create(*args, **kwargs)
+        return super(ViewManager, self).create(*args, **kwargs)
 
 #浏览数据
 class ViewRecord(BaseRecord):
@@ -256,7 +256,7 @@ class AgreeManager(models.Manager):
         instance.save()
         aId = 'Ag' + str(cnt)
         kwargs['RecordId']=aId
-        super(AgreeManager, self).create(*args, **kwargs)
+        return super(AgreeManager, self).create(*args, **kwargs)
 
 #点赞数据
 class Agree(BaseRecord):
@@ -282,7 +282,7 @@ class EditManager(models.Manager):
         instance.save()
         eId = 'Edit' + str(cnt)
         kwargs['RecordId']=eId
-        super(EditManager, self).create(*args, **kwargs)
+        return super(EditManager, self).create(*args, **kwargs)
 # 编辑记录
 class EditRecord(BaseRecord):
     # 编辑类型
@@ -311,7 +311,7 @@ class FavManager(models.Manager):
         instance.save()
         fId = 'Fav' + str(cnt)
         kwargs['RecordId']=fId
-        super(FavManager, self).create(*args, **kwargs)
+        return super(FavManager, self).create(*args, **kwargs)
 # 收藏记录
 class FavoriteRecord(BaseRecord):
     # 收藏类型
@@ -335,7 +335,8 @@ class ReplyManager(models.Manager):
         instance.save()
         rId = 'Rep' + str(cnt)
         kwargs['RecordId']=rId
-        super(ReplyManager, self).create(*args, **kwargs)
+        return super(ReplyManager, self).create(*args, **kwargs)
+
 # 评论记录
 class ReplyRecord(BaseRecord):
     # 回复目标的类型
@@ -414,6 +415,42 @@ def Pre_Save_RepRcd_Handler(sender,instance,**kwargs):
 @receiver(pre_delete,sender=MovieTag)
 def Pre_Delete_MovieTag_Handler(sender,instance,**kwargs):
     MovTagConnection.objects.filter(MovTagId=instance.MovTagId).delete()
+    # 删除相应的点赞信息
+    Agree.objects.filter(TargetId__contains=instance.MovTagId).delete()
+
+#处理电影删除情况
+@receiver(pre_delete,sender=Movie)
+def Pre_Delete_Movie_Handler(sender,instance,**kwargs):
+    #删除相应的点赞信息以及标签联系
+    MovTagConnection.objects.filter(MovId=instance.MovTagId).delete()
+    # 删除相应的点赞信息
+    Agree.objects.filter(TargetId__contains=instance.MovTagId).delete()
+
+def _deleteSubReply(replyInstance):
+    # 删除相应的点赞
+    agrees = Agree.objects.filter(TargetId=replyInstance.RecordId)
+    agrees.delete()
+    #找到所有
+    replies=ReplyRecord.objects.filter(TargetId=replyInstance.RecordId)
+    if replies.exists():
+        # 先删除子评论
+        for r in replies:
+            _deleteSubReply(r)
+        replies.delete()
+
+# 处理评价的删除
+@receiver(pre_delete,sender=ReplyRecord)
+def Pre_Delete_Reply_Handler(sender,instance,**kwargs):
+    # 找到所有
+    replies = ReplyRecord.objects.filter(TargetId=instance.RecordId)
+    if replies.exists():
+        # 先删除子评论
+        for r in replies:
+            _deleteSubReply(r)
+
+    #  删除相应的点赞信
+    agrees=Agree.objects.filter(TargetId=instance.RecordId)
+    agrees.delete()
 
 # 处理浏览记录创建
 @receiver(pre_save,sender=ViewRecord)
@@ -449,7 +486,7 @@ def Pre_Save_Agree_Handler(sender,instance,**kwargs):
 @receiver(pre_delete,sender=Agree)
 def Pre_Delete_Agree_Handler(sender,instance,**kwargs):
     # 如果点赞的是标签
-    if instance._state.adding and instance.AgreeType == 2:
+    if instance.AgreeType == 2:
         # 获取目标id
         temp = instance.TargetId
         # 获取id
@@ -459,7 +496,7 @@ def Pre_Delete_Agree_Handler(sender,instance,**kwargs):
         target.AgreeCount -= 1
         target.save()
     # 点赞的是评论
-    elif instance._state.adding and instance.AgreeType == 1:
+    elif instance.AgreeType == 1:
         # 获取目标id
         temp = instance.TargetId
         # 查询

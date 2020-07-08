@@ -420,7 +420,7 @@ def wrapTheMovie(movies):
         allmovies.append(info)
     return allmovies
 
-def GetWrappedReply(replyInstance):
+def GetWrappedReply(replyInstance,userIns):
     temp = {}
     # 如果存在该用户，则查询用户名
     if replyInstance.UserId:
@@ -429,6 +429,8 @@ def GetWrappedReply(replyInstance):
         temp['name'] = '用户已注销'
     # 评论内容
     temp['content'] = replyInstance.ReplyContent
+    # 评论id
+    temp['replyid']=replyInstance.RecordId
     # 评论点赞数
     temp['agree'] = replyInstance.AgreeCount
     # 如果是对电影的评论
@@ -438,6 +440,13 @@ def GetWrappedReply(replyInstance):
         temp['score'] = 0
     # 评论时间
     temp['time'] = replyInstance.RecordTime
+
+    # 查询是否点赞
+    tempAg=Agree.objects.filter(TargetId=replyInstance.RecordId,UserId=userIns.UserId)
+    if tempAg.exists():
+        temp['agreed']=True
+    else:
+        temp['agreed']=False
     # 评论的回复
     reply2this = ReplyRecord.objects.filter(TargetId=replyInstance.RecordId)
     tempList = []
@@ -445,18 +454,60 @@ def GetWrappedReply(replyInstance):
     if reply2this.exists():
         for tarRep in reply2this:
             # 则获取包装后的评论
-            tempTarget = GetWrappedReply(tarRep)
+            tempTarget = GetWrappedReply(tarRep,userIns)
             tempList.append(tempTarget)
     temp['reply']=tempList
     return temp
 
 # 获取包装后的评论列表
-def GetReplies(movId):
+def GetReplies(movId,userIns):
     # 找到该电影的所有评论
     replies=ReplyRecord.objects.filter(TargetId=movId)
     result=[]
     for r in replies:
         #获取该评论
-        temp=GetWrappedReply(r)
+        temp=GetWrappedReply(r,userIns)
         result.append(temp)
     return result
+
+#进行点赞
+# 用户实例，目标id，点赞类型
+def CreateAgree(userInstance,targetId,agreeType,movId=None):
+    #如果点赞的是评论
+    if agreeType==1:
+        Agree.objects.create(UserId=userInstance,TargetId=targetId,AgreeType=1)
+        reply=ReplyRecord.objects.filter(RecordId=targetId)
+        if not reply.exists():
+            raise Exception('找不到该评论:'+targetId)
+        return reply[0].AgreeCount
+    if agreeType==2 and movId!=None:
+        realTarget=targetId+'#'+movId
+        Agree.objects.create(UserId=userInstance,TargetId=realTarget,AgreeType=2)
+        movtagConn=MovTagConnection.objects.filter(MovId=movId,MovTagId=targetId)
+        if not movtagConn.exists():
+            raise Exception('找不到该标签:'+targetId+'#'+movId)
+        return movtagConn[0].AgreeCount
+    raise Exception('点赞格式不正确!'+agreeType+','+targetId)
+
+# 取消点赞
+def CancelAgree(userInstance,targetId,agreeType,movId=None):
+    tempTarget=targetId
+    # 如果点赞的是标签，则转换targetid
+    if agreeType==2 :
+        if not movId:
+            raise Exception('未找到该标签下的电影')
+        targetId=targetId+'#'+movId
+    agreeInstance=Agree.objects.filter(UserId=userInstance,TargetId=targetId)
+    if not agreeInstance.exists():
+        raise Exception('找不到该点赞信息')
+    agreeInstance.delete()
+    if agreeType==1:
+        replies=ReplyRecord.objects.filter(RecordId=targetId)
+        if not replies.exists():
+            raise Exception('未找到该评论:'+targetId)
+        return replies[0].AgreeCount
+    else:
+        tags=MovTagConnection.objects.filter(MovId=movId,MovTagId=tempTarget)
+        if not tags.exists():
+            raise Exception('未找到该电影下的标签：'+movId+','+tempTarget)
+        return tags[0].AgreeCount
