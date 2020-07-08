@@ -28,7 +28,8 @@ def login(request):
                 request.session.create()
             request.session['is_login'] = True
             request.session['user1'] = name
-
+            uins=user[0]
+            request.session['level']=uins.UserLevel
             # request.session.save()
             print(request.session['user1'])
             # path = request.POST.get('next')
