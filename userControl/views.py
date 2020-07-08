@@ -285,7 +285,10 @@ def timeLine(request, un):
             print(message, sub.__name__)
             timeline['actiontime'] = message.RecordTime
             timeline['title'] = GetTitle(sub.__name__)
-            timeline['detail'] = wrapTheDetail(sub.__name__, message.RecordId)
+            tempD=wrapTheDetail(sub.__name__,message.RecordId)
+            timeline['origin']=tempD['origin']
+            timeline['originid']=tempD['originId']
+            timeline['detail'] = tempD['detail']
             if timeline['detail'] == None:
                 continue
             timelines.append(timeline)
