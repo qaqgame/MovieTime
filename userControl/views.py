@@ -102,7 +102,8 @@ def UserSpace(request,un):
         userlv=userInstance.UserLevel
         usercur=userInstance.UserCurExp
         usermax=userInstance.UserMaxExp
-        userData={'username':username,'currlevel':userlv,'currexp':usercur,'maxexp':usermax}
+        newUser=userInstance.HasView
+        userData={'username':username,'currlevel':userlv,'currexp':usercur,'maxexp':usermax,"newuser":newUser}
 
         # 查询该收藏
         favList=models.FavoriteRecord.objects.filter(UserId=userInstance.UserId)
