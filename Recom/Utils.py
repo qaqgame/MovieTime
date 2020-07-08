@@ -72,17 +72,19 @@ def GetRecommList(ids,count,type):
         allRecomm = CosRelation.objects.filter(Movie1Origin=mov.MovOriginId).order_by('Relation')
         # 加入一级列表
         for rec in allRecomm:
-            realMov=Movie.objects.filter(MovOriginId=rec.Movie2Origin)[0]
-            # 如果已存在，则加入二级列表
-            if (realMov in firstQueue) and (realMov.MovId not in ids):
-                firstQueue.remove(realMov)
-                _addToQueue(secondQueue,realMov)
-                tempList.append(realMov)
-            elif (realMov in tempList):
-                _addToQueue(secondQueue,realMov)
-            # 否则，直接加入一级列表
-            else:
-                firstQueue.append(realMov)
+            realMovs=Movie.objects.filter(MovOriginId=rec.Movie2Origin)
+            if realMovs.exists():
+                realMov=realMovs[0]
+                # 如果已存在，则加入二级列表
+                if (realMov in firstQueue) and (realMov.MovId not in ids):
+                    firstQueue.remove(realMov)
+                    _addToQueue(secondQueue,realMov)
+                    tempList.append(realMov)
+                elif (realMov in tempList):
+                    _addToQueue(secondQueue,realMov)
+                # 否则，直接加入一级列表
+                else:
+                    firstQueue.append(realMov)
 
     #如果二级列表长度足够
     if len(secondQueue)>=count:
