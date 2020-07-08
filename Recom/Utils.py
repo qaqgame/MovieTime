@@ -70,7 +70,7 @@ def GetRecommList(ids,count,type):
         mov=firstQueue.pop()
         # 获取所有推荐
         allRecomm = CosRelation.objects.filter(Movie1Origin=mov.MovOriginId).order_by('Relation')
-        print('get recom:'+len(allRecomm))
+        print('get recom:'+str(len(allRecomm)))
         # 加入一级列表
         for rec in allRecomm:
             realMovs=Movie.objects.filter(MovOriginId=rec.Movie2Origin)
