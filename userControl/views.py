@@ -238,7 +238,13 @@ def movInfo(request, mn):
 
     # 获取标签
     tags=MovTagConnection.objects.filter(MovId=movInstance.MovId)
-    tagList=wrapTag(tags)
+    #获取user
+    username = request.session.get('user1', '')
+    userInstance = GetUser(username)
+    if not userInstance:
+        res=wrapTheJson('failed','找不到该user:'+username)
+        return JsonResponse(res)
+    tagList=wrapTag(tags,userInstance)
     movieinfo['tags']=tagList
     # print(uid.UserId)
     if not uid:
@@ -326,7 +332,7 @@ def AddTag(request):
         instance=MovieTag.objects.create(MovTagCnt=tag)
     else:
         instance=instances[0]
-    conns=MovTagConnection.objects.create(MovTagId=instance,MovId=movIns)
+    conns=MovTagConnection.objects.filter(MovTagId=instance,MovId=movIns)
     if not conns.exists():
         conn=MovTagConnection.objects.create(MovTagId=instance,MovId=movIns)
     else:

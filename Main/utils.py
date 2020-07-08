@@ -430,13 +430,19 @@ def wrapTheMovie(movies):
     return allmovies
 
 #包装标签
-def wrapTag(tags):
+def wrapTag(tags,user):
     result=[]
     for tag in tags:
         temp={}
         temp['tagid']=tag.MovTagId.MovTagId
         temp['tagcontent']=tag.MovTagId.MovTagCnt
         temp['agree']=tag.AgreeCount
+        targetId=tag.MovTagId.MovTagId+'#'+tag.MovId.MovId
+        ins=Agree.objects.filter(UserId=user,TargetId=targetId)
+        if ins.exists():
+            temp['agreed']=True
+        else:
+            temp['agreed']=False
         result.append(temp)
     return result
 
