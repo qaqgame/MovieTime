@@ -6,7 +6,7 @@ import json
 import random
 # Create your views here.
 from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes, ParseMovieRegions, GetFilmList, \
-    RegionList, ToTypeNum, wrapTheMovie, GetReplies, CreateAgree, CancelAgree
+    RegionList, ToTypeNum, wrapTheMovie, GetReplies, CreateAgree, CancelAgree, wrapTag
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
 from Recom.Utils import GetRecommList, GetRecommByType
 
@@ -183,7 +183,7 @@ def ViewRecord(request, un):
             oneMessage['moviename'] = movieName
             oneMessage['extrainfo'] =  movViewTime
             movList.append(oneMessage)
-        movList.sort(key=lambda w:w["extrainfo"])
+        movList.sort(key=lambda w:w["extrainfo"],reverse=True)
         data['histories'] = movList
         res['reason'] = ''
         res['result'] = 'success'
@@ -235,6 +235,11 @@ def movInfo(request, mn):
     # 评分
     movieinfo['rate'] = movInstance.MovScore
     uid = GetUser(request.session.get('user1'))
+
+    # 获取标签
+    tags=MovTagConnection.objects.filter(MovId=movInstance.MovId)
+    tagList=wrapTag(tags)
+    movieinfo['tags']=tagList
     # print(uid.UserId)
     if not uid:
         ifKeeped = False
@@ -300,7 +305,7 @@ def timeLine(request, un):
                     tempag['detail']=ta.UserId.UserName+' 点赞了你的评论('+reply.ReplyContent+')'
                     timelines.append(tempag)
 
-    timelines.sort(key=lambda w:w["actiontime"])
+    timelines.sort(key=lambda w:w["actiontime"],reverse=True)
     data = {}
     data['timeline'] = timelines
     res = wrapTheJson("success", "", data=data)
@@ -520,6 +525,7 @@ def getUserReply(request):
             str = "评论了" + username + "的评论("+content+"):" + record.ReplyContent
         timeline['detail'] = str
         timelines.append(timeline)
+    timelines.sort(key=lambda w: w["actiontime"], reverse=True)
     data = {}
     data['timeline'] = timelines
     res = wrapTheJson('success', '', data=data)

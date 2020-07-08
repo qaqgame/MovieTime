@@ -416,7 +416,7 @@ def wrapTheDetail(name, id):
             targetContent=targetRecord.ReplyContent
             return "回复了" + username + "的评论("+targetContent+")" +  "\t" + record.ReplyContent
 
-
+#包装电影
 def wrapTheMovie(movies):
     allmovies = []
     for movie in movies:
@@ -428,6 +428,17 @@ def wrapTheMovie(movies):
         info['extrainfo'] = movie.MovScore
         allmovies.append(info)
     return allmovies
+
+#包装标签
+def wrapTag(tags):
+    result=[]
+    for tag in tags:
+        temp={}
+        temp['tagid']=tag.MovTagId.MovTagId
+        temp['tagcontent']=tag.MovTagId.MovTagCnt
+        temp['agree']=tag.MovTagId.AgreeCount
+        result.append(temp)
+    return result
 
 def GetWrappedReply(replyInstance,userIns):
     temp = {}
