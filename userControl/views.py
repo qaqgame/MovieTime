@@ -242,8 +242,7 @@ def movInfo(request, mn):
     username = request.session.get('user1', '')
     userInstance = GetUser(username)
     if not userInstance:
-        res=wrapTheJson('failed','找不到该user:'+username)
-        return JsonResponse(res)
+        userInstance=None
     tagList=wrapTag(tags,userInstance)
     movieinfo['tags']=tagList
     # print(uid.UserId)
