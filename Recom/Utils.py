@@ -6,6 +6,7 @@ from Main.models import CosRelation
 import numpy as np
 
 movies_index = np.loadtxt('movies_index.csv', dtype = np.int, delimiter=',')
+dic = np.load('movies_dic.npy', allow_pickle=True).item()
 
 def ImportRelation(id1,id1Origin,id2,id2Origin,relation):
     # movId1='Mov'+str(id1)
@@ -39,15 +40,17 @@ def GetRecommList(ids,count,type):
     if isinstance(ids,list):
         print("GetRecommList3")
         for mid in ids:
-            tempRelation=CosRelation.objects.filter(Movie1=mid)
+            mov = Movie.objects.filter(MovId=mid)[0]
+            realId=mov.MovOriginId
+            tempRelation=CosRelation.objects.filter(Movie1Origin=realId)
             if tempRelation.exists():
-                mov=Movie.objects.filter(MovId=mid)[0]
                 firstQueue.append(mov)
     else:
-        tempRelation = CosRelation.objects.filter(Movie1=ids)
+        mov = Movie.objects.filter(MovId=ids)[0]
+        realId=mov.MovOriginId
+        tempRelation = CosRelation.objects.filter(Movie1Origin=realId)
         if not tempRelation.exists():
             return None
-        mov = Movie.objects.filter(MovId=ids)[0]
         firstQueue.append(mov)
     #
     # #获取原电影数目
@@ -69,30 +72,25 @@ def GetRecommList(ids,count,type):
     print(len(firstQueue))
 
     #当二级队列足够或一级过长时终止
-    while len(secondQueue)<count and len(firstQueue)<3*count:
+    while len(secondQueue)<count and len(firstQueue)<3*count and len(firstQueue)>0:
         mov=firstQueue.pop()
         # 获取所有推荐
         allRecomm = CosRelation.objects.filter(Movie1Origin=mov.MovOriginId).order_by('Relation')
         print('get recom:'+str(len(allRecomm)))
         # 加入一级列表
         for rec in allRecomm:
-            realMovs=Movie.objects.filter(MovOriginId=movies_index[rec.Movie2Origin])
-            print(rec.Movie2Origin+',mov:'+rec.Movie2)
-            tttm=Movie.objects.filter(MovId=rec.Movie2)[0]
-            print('2mov:'+tttm.MovOriginId)
+            realMovs=Movie.objects.filter(MovOriginId=movies_index[int(rec.Movie2Origin)])
             if realMovs.exists():
                 realMov=realMovs[0]
                 # 如果类型满足
                 if realMov.MovType&int(type)!=0:
                     # 如果已存在，则加入二级列表
                     if (realMov in firstQueue) and (realMov.MovId not in ids) and(realMov not in tempList):
-                        print('add second')
                         firstQueue.remove(realMov)
                         _addToQueue(secondQueue,realMov)
                         tempList.append(realMov)
                         continue
                     elif (realMov in tempList):
-                        print('in temp,add second')
                         _addToQueue(secondQueue,realMov)
                         continue
                 print('add')
@@ -107,17 +105,22 @@ def GetRecommList(ids,count,type):
         for i in range(count):
             result.append(secondQueue[i]['item'].MovId)
         return result
-
     #否则，从一级列表取剩下的数量
     restNum=count-len(secondQueue)
     result=[]
     for item in secondQueue:
         result.append(item['item'].MovId)
-    # 随机打乱一级列表
-    random.shuffle(firstQueue)
-    for i in range(restNum):
-        if firstQueue[i].MovType&int(type)!=0:
-            result.append(firstQueue[i].MovId)
+    if len(firstQueue)>restNum:
+        # 随机打乱一级列表
+        random.shuffle(firstQueue)
+        for i in range(restNum):
+            if firstQueue[i].MovType&int(type)!=0:
+                result.append(firstQueue[i].MovId)
+    #如果不存在
+    else:
+        for i in firstQueue:
+            if i.MovType&int(type)!=0:
+                result.append(i.MovId)
     return result
 
     #
