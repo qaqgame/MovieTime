@@ -787,6 +787,7 @@ def createReply(request):
         replyid = recv_data['replyid']
         movid=recv_data['movieid']
         reply=models.ReplyRecord.objects.create(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content)
+        targetRep=ReplyRecord.objects.get(RecordId=replyid)
         #reply = models.ReplyRecord.objects.filter(UserId=userInstance, TargetId=replyid, ReplyType=2, ReplyContent=content).order_by("-RecordTime")[0]
         print(reply)
         data = {}
@@ -795,6 +796,7 @@ def createReply(request):
         data['agree']=reply.AgreeCount
         data['time'] = reply.RecordTime
         data['replyid'] = reply.RecordId
+        data['target']=targetRep.UserId.UserName
         data['reply'] = []
         data['count']=0
         res = wrapTheJson('success', '', data)
