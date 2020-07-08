@@ -424,11 +424,11 @@ def agree(request):
     #如果是标签
     else:
         agreeType = 2
-        tag=MovieTag.objects.filter(MovTagCnt=target)
+        tag=MovieTag.objects.filter(MovTagId=target)
         if not tag.exists():
             res = wrapTheJson('failed', '无法找到该标签')
             return JsonResponse(res)
-        tagId=tag
+        tagId=tag[0].MovTagId
         targetId=tagId
 
     # 获取用户
@@ -440,7 +440,9 @@ def agree(request):
 
     try:
         result=CreateAgree(userInstance,targetId,agreeType,movId)
+        print(result)
     except Exception as e:
+        print(e)
         res=wrapTheJson('failed',e.__str__())
         return JsonResponse(res)
     finally:
@@ -474,11 +476,11 @@ def cancelAgree(request):
     # 如果是标签
     else:
         agreeType = 2
-        tag = MovieTag.objects.filter(MovTagCnt=target)
+        tag = MovieTag.objects.filter(MovTagId=target)
         if not tag.exists():
             res = wrapTheJson('failed', '无法找到该标签')
             return JsonResponse(res)
-        tagId = tag
+        tagId = tag[0].MovTagId
         targetId = tagId
 
     # 获取用户
