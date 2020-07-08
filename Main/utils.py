@@ -288,11 +288,8 @@ def GetFilmList(type=~(1<<30),region=~(1<<5),name='',order=0,startIdx=0,length=2
     regions=region
     # tempDate = datetime.datetime.strptime(str(year), "%Y")
     # realDate = tempDate.date()
-    print(types)
     filmList = Movie.objects.extra(where=["MovType&%s!=0"], params=[int(types)])
-    print(filmList.count())
     filmList = filmList.extra(where=["MovOrigin&%s!=0"],params=[int(regions)])
-    print(filmList.exists())
     # if year!=-1:
     #     filmList=filmList.filter(MovDate=realDate)
     if name:

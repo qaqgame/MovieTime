@@ -204,12 +204,13 @@ def GetRecommByType(type,count,user):
     cnt=0
     result=[]
     while len(result)<count:
-        tempList = list(GetFilmList(type=type, order=5, startIdx=cnt,length=3 * count))
+        print("get rec by type from:"+cnt)
+        tempList = list(GetFilmList(type=type, order=5, startIdx=cnt,length=count))
         random.shuffle(tempList)
         for mov in tempList:
             #检索不在收藏中的电影
             favRec=FavoriteRecord.objects.filter(UserId=user,TargetId=mov.MovId)
             if not favRec.exists():
                 result.append(mov)
-        cnt+=3*count
+        cnt+=count
     return result
