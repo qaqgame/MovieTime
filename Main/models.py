@@ -426,6 +426,27 @@ def Pre_Delete_Movie_Handler(sender,instance,**kwargs):
     # 删除相应的点赞信息
     Agree.objects.filter(TargetId__contains=instance.MovTagId).delete()
 
+def _deleteSubReply(replyInstance):
+    #找到所有
+    replies=ReplyRecord.objects.filter(TargetId=replyInstance.RecordId)
+    if replies.exists():
+        # 先删除子评论
+        for r in replies:
+            _deleteSubReply(r)
+        replies.delete()
+# 处理评价的删除
+@receiver(pre_delete,sender=ReplyRecord)
+def Pre_Delete_Reply_Handler(sender,instance,**kwargs):
+    # 找到所有
+    replies = ReplyRecord.objects.filter(TargetId=instance.RecordId)
+    if replies.exists():
+        # 先删除子评论
+        for r in replies:
+            _deleteSubReply(r)
+
+    #  删除相应的点赞信
+
+
 # 处理浏览记录创建
 @receiver(pre_save,sender=ViewRecord)
 def Pre_Save_ViewRcd_Handler(sender,instance,**kwargs):

@@ -7,8 +7,8 @@ def ImportRelation(id1,id1Origin,id2,id2Origin,relation):
     # movId2='Mov'+str(id2)
 
     # 如果存在则直接结束
-    # if CosRelation.objects.filter(Movie1=id1,Movie2=id2).exists():
-    #     return
+    if CosRelation.objects.filter(Movie1=id1,Movie2=id2).exists():
+        return
 
     #否则添加
     CosRelation.objects.create(Movie1=id1,Movie1Origin=id1Origin,Movie2=id2,Movie2Origin=id2Origin,Relation=relation)
