@@ -87,7 +87,6 @@ def GetRecommList(ids,count,type):
     while len(secondQueue)<count and len(firstQueue)<size*count and len(firstQueue)>0:
         item=firstQueue.pop()
         mov=item['item']
-        print(type(mov))
         # 获取所有推荐
         allRecomm = CosRelation.objects.filter(Movie1Origin=mov.MovOriginId).order_by('Relation')
         print('get recom:'+str(len(allRecomm)))
