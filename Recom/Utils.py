@@ -91,9 +91,8 @@ def GetRecommList(ids,count,type):
         #直接返回该列表
         result=[]
         secondQueue=secondQueue.sort(key=lambda w:w["power"],reverse=True)
-        idx=0
         for i in range(count):
-            result.append(secondQueue[idx]['item'].MovId)
+            result.append(secondQueue[i]['item'].MovId)
         return result
 
     #否则，从一级列表取剩下的数量
