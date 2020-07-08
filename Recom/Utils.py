@@ -63,28 +63,32 @@ def GetRecommList(ids,count,type):
     # 二级推荐队列
     secondQueue=[]
 
-
+    print(len(firstQueue))
 
     #当二级队列足够或一级过长时终止
     while len(secondQueue)<count and len(firstQueue)<3*count:
         mov=firstQueue.pop()
         # 获取所有推荐
         allRecomm = CosRelation.objects.filter(Movie1Origin=mov.MovOriginId).order_by('Relation')
+        print('get recom:'+len(allRecomm))
         # 加入一级列表
         for rec in allRecomm:
             realMovs=Movie.objects.filter(MovOriginId=rec.Movie2Origin)
             if realMovs.exists():
                 realMov=realMovs[0]
-                # 如果已存在，则加入二级列表
-                if (realMov in firstQueue) and (realMov.MovId not in ids) and(realMov not in tempList):
-                    firstQueue.remove(realMov)
-                    _addToQueue(secondQueue,realMov)
-                    tempList.append(realMov)
-                elif (realMov in tempList):
-                    _addToQueue(secondQueue,realMov)
+                # 如果类型满足
+                if realMov.MovType&int(type)!=0:
+                    # 如果已存在，则加入二级列表
+                    if (realMov in firstQueue) and (realMov.MovId not in ids) and(realMov not in tempList):
+                        firstQueue.remove(realMov)
+                        _addToQueue(secondQueue,realMov)
+                        tempList.append(realMov)
+                        continue
+                    elif (realMov in tempList):
+                        _addToQueue(secondQueue,realMov)
+                        continue
                 # 否则，直接加入一级列表
-                else:
-                    firstQueue.append(realMov)
+                firstQueue.append(realMov)
 
     #如果二级列表长度足够
     if len(secondQueue)>=count:
@@ -103,7 +107,8 @@ def GetRecommList(ids,count,type):
     # 随机打乱一级列表
     random.shuffle(firstQueue)
     for i in range(restNum):
-        result.append(firstQueue[i].MovId)
+        if firstQueue[i].MovType&int(type)!=0:
+            result.append(firstQueue[i].MovId)
     return result
 
     #
