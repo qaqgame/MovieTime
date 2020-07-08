@@ -9,6 +9,7 @@ from Main.utils import MsgTemplate, GetMovImgUrl, MovieTypeList, ParseMovieTypes
     RegionList, ToTypeNum, wrapTheMovie, GetReplies, CreateAgree, CancelAgree, wrapTag, AddUserExp
 from Main.utils import GetFilm, wrapTheJson, GetUser, GetTitle, wrapTheDetail
 from Recom.Utils import GetRecommList, GetRecommByType
+from Recom.Utils import *
 
 
 def login(request):
