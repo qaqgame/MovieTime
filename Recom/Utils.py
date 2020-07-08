@@ -117,7 +117,7 @@ def GetRecommList(ids,count,type):
                 print('add')
                 tempItem={}
                 tempItem['power']=power
-                tempItem['item']=realMovs
+                tempItem['item']=realMov
                 # 否则，直接加入一级列表
                 firstQueue.append(tempItem)
 
