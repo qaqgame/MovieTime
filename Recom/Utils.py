@@ -76,7 +76,7 @@ def GetRecommList(ids,count,type):
             if realMovs.exists():
                 realMov=realMovs[0]
                 # 如果已存在，则加入二级列表
-                if (realMov in firstQueue) and (realMov.MovId not in ids):
+                if (realMov in firstQueue) and (realMov.MovId not in ids) and(realMov not in tempList):
                     firstQueue.remove(realMov)
                     _addToQueue(secondQueue,realMov)
                     tempList.append(realMov)
