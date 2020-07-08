@@ -114,7 +114,7 @@ def GetRecommList(ids,count,type):
                         _addToQueue(secondQueue,realMov,tempPower,realMov.MovScore)
                         tempList.append(realMov)
                         continue
-                    elif (realMov in tempList):
+                    elif (realMov.MovId not in ids) and (realMov in tempList) and(realMov.MovType&type!=0):
                         _addToQueue(secondQueue,realMov,power,realMov.MovScore)
                         continue
                 print('add')
