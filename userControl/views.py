@@ -311,6 +311,31 @@ def timeLine(request, un):
     res = wrapTheJson("success", "", data=data)
     return JsonResponse(res)
 
+#添加标签
+def AddTag(request):
+    recv_data = json.loads(request.body.decode())
+    movId=recv_data['movid']
+    movInstances=Movie.objects.filter(MovId=movId)
+    if not movInstances.exists():
+        res=wrapTheJson('failed','无法找到该电影：'+movId)
+        return JsonResponse(res)
+    movIns=movInstances[0]
+    tag=recv_data['content']
+    instances=MovieTag.objects.filter(MovTagCnt=tag)
+    if not instances.exists():
+        instance=MovieTag.objects.create(MovTagCnt=tag)
+    else:
+        instance=instances[0]
+
+    conn=MovTagConnection.objects.create(MovTagId=instance,MovId=movIns)
+    data={}
+    data['tagcontent']=instance.MovTagCnt
+    data['agree']=conn.AgreeCount
+    data['tagid']=instance.MovTagId
+    res=wrapTheJson('success','',data)
+    return JsonResponse(res)
+
+
 # 显示片库页面
 def ShowMoviePage(request):
     typeList=MovieTypeList
@@ -412,6 +437,8 @@ def agree(request):
         data['agreecount']=result
         res=wrapTheJson('success','',data)
         return JsonResponse(res)
+
+
 
 #取消点赞
 def cancelAgree(request):
