@@ -496,6 +496,34 @@ def getKeep(request, un):
     res = wrapTheJson("success", '', data)
     return JsonResponse(res)
 
+#获取该用户的评论
+def getUserReply(request):
+    username = request.session.get('user1', '')
+    if username == '':
+        res = wrapTheJson('failed', '没有登陆')
+        return JsonResponse(res)
+    userInstance = GetUser(username)
+    replys = models.ReplyRecord.objects.filter(UserId=userInstance.UserId)
+    timelines = []
+    for record in replys:
+        timeline = {}
+        # 评论电影
+        timeline['actiontime'] = record.RecordTime
+        if record.ReplyType == 1:
+            MovName = Movie.objects.filter(MovId=record.TargetId)[0].MovName
+            str = "评论了电影 " + MovName + ":" +record.ReplyGrade+","+ record.ReplyContent
+        else:
+            #获取评论目标
+            target=ReplyRecord.objects.filter(RecordId=record.TargetId)[0]
+            content=target.ReplyContent
+            username = target.UserId.UserName
+            str = "评论了" + username + "的评论("+content+"):" + record.ReplyContent
+        timeline['detail'] = str
+        timelines.append(timeline)
+    data = {}
+    data['timeline'] = timelines
+    res = wrapTheJson('success', '', data=data)
+    return JsonResponse(res)
 
 def likeType(request):
     recv_data = json.loads(request.body.decode())  # 解析前端发送的JSON格式的数据
